@@ -121,7 +121,7 @@ namespace Drawing {
 
 // Drawing helper functions
 inline void DrawString(const Vector2& pos, const char* text, const ImColor& color = ImColor(255, 255, 255, 255)) {
-    Drawing::GetDrawList()->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + ImGui::CalcTextSize(text).x, pos.y + ImGui::CalcTextSize(text).y), ImColor(0, 0, 0, 150));
+    Drawing::GetDrawList()->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + ImGui::CalcTextSize(text).x, pos.y + ImGui::CalcTextSize(text).y), ImColor(0, 0, 0, 180));
     Drawing::GetDrawList()->AddText(ImVec2(pos.x, pos.y), color, text);
 }
 
