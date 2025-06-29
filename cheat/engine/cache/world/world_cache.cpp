@@ -2,8 +2,9 @@
 #include <access/access.hpp>
 #include <logger/logger.hpp>
 
-WorldCache::WorldCache(AccessManager* access_manager)
+WorldCache::WorldCache(AccessManager* access_manager, TracelineManager* traceline_manager)
     : m_access_manager(access_manager)
+    , m_traceline_manager(traceline_manager)
     , m_initialized(false)
 	, m_scatter_handle(nullptr)
     , m_last_update(std::chrono::milliseconds(0))
@@ -250,6 +251,7 @@ void WorldCache::load_world_triangles() {
         }
 
         logger::debug("Loaded " + std::to_string(m_triangles.size()) + " triangles from world cache");
+        m_traceline_manager->rebuild_spatial_optimization(m_triangles);
 
     } catch (const std::exception& e) {
         logger::error("Exception in load_world_triangles: " + std::string(e.what()));

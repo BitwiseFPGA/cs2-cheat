@@ -26,7 +26,6 @@ Engine::Engine()
 {
     auto now = std::chrono::high_resolution_clock::now();
     m_last_cache_update = now;
-    m_last_physics_update = now;
     m_last_features_update = now;
 }
 
@@ -44,19 +43,19 @@ bool Engine::initialize() {
             logger::log_failure("Access System");
             return false;
         }
-        
-        logger::log_step("2/6", "Setting up entity and world caches");
-        if (!initialize_cache_system()) {
-            logger::log_failure("Cache System");
-            return false;
-        }
-        
-        logger::log_step("3/6", "Setting up physics and traceline system");
+
+        logger::log_step("2/6", "Setting up physics and traceline system");
         if (!initialize_physics_system()) {
             logger::log_failure("Physics System");
             return false;
         }
 
+        logger::log_step("3/6", "Setting up entity and world caches");
+        if (!initialize_cache_system()) {
+            logger::log_failure("Cache System");
+            return false;
+        }
+        
         logger::log_step("4/6", "Setting up DirectX 11 renderer");
         if (!initialize_renderer()) {
             logger::log_failure("Renderer System");
@@ -154,8 +153,6 @@ void Engine::run() {
 
             update_caches();
 
-            update_physics();
-            
             update_features();
 			
             update_view();
@@ -203,7 +200,7 @@ bool Engine::initialize_cache_system() {
         m_entity_cache = std::make_unique<EntityCache>(m_access_manager.get());
         m_entity_cache->initialize();
         
-        m_world_cache = std::make_unique<WorldCache>(m_access_manager.get());
+        m_world_cache = std::make_unique<WorldCache>(m_access_manager.get(), m_traceline_manager.get());
         m_world_cache->initialize();
 
         return true;
@@ -215,7 +212,7 @@ bool Engine::initialize_cache_system() {
 
 bool Engine::initialize_physics_system() {    
     try {
-        m_traceline_manager = std::make_unique<TracelineManager>(m_world_cache.get());
+        m_traceline_manager = std::make_unique<TracelineManager>();
         
         if (!m_traceline_manager->initialize()) {
             logger::error("Failed to initialize TraclineManager");
@@ -342,16 +339,6 @@ void Engine::update_view() {
 
     if (should_update_system(m_last_frame_update, FRAME_UPDATE_INTERVAL_MS)) {
         m_entity_cache->update_frame();
-    }
-}
-
-void Engine::update_physics() {
-    if (!should_update_system(m_last_physics_update, PHYSICS_UPDATE_INTERVAL_MS)) {
-        return;
-    }
-    
-    if (m_traceline_manager && m_world_cache) {
-        m_traceline_manager->rebuild_spatial_optimization();
     }
 }
 

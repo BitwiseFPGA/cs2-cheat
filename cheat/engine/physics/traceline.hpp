@@ -1,11 +1,8 @@
 #pragma once
 #include <engine/sdk/math/vector.hpp>
 #include <engine/sdk/math/triangle.hpp>
-#include <engine/cache/world/world_cache.hpp>
 #include <memory>
 #include <vector>
-
-class WorldCache;
 
 struct TraceResult {
     bool hit;
@@ -33,13 +30,13 @@ struct SpatialGrid {
 
 class TracelineManager {
 public:
-    TracelineManager(WorldCache* world_cache);
+    TracelineManager();
     ~TracelineManager();
     
     bool initialize();
     void shutdown();
     
-    void rebuild_spatial_optimization();
+    void rebuild_spatial_optimization(std::vector<Triangle>& new_triangles);
     
     TraceResult trace_line(const Vector3& start, const Vector3& end, bool ignore_glass = false) const;
     
@@ -49,7 +46,6 @@ public:
                                const Triangle& triangle, float& distance, Vector3& hit_point) const;
         
 private:
-    WorldCache* m_world_cache;
     bool m_initialized;
     
     std::vector<Triangle> m_triangles;

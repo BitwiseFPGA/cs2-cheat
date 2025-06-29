@@ -8,8 +8,10 @@
 #include <chrono>
 #include <unordered_set>
 #include <access/access.hpp>
+#include <engine/physics/traceline.hpp>
 
 class AccessManager;
+class TracelineManager;
 
 namespace physx {
 	constexpr uintptr_t trace_mng = 0x182DB00;
@@ -49,7 +51,7 @@ namespace physx {
 
 class WorldCache {
 public:
-    WorldCache(AccessManager* access_manager);
+    WorldCache(AccessManager* access_manager, TracelineManager* traceline_manager);
     ~WorldCache();
     
     bool initialize();
@@ -62,6 +64,7 @@ public:
     
 private:
     AccessManager* m_access_manager;
+    TracelineManager* m_traceline_manager;
     ScatterHandle m_scatter_handle;
     bool m_initialized;
 

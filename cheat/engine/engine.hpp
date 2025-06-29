@@ -84,12 +84,10 @@ private:
     
     static constexpr double CACHE_UPDATE_INTERVAL_MS = 1000.0;
     static constexpr double FRAME_UPDATE_INTERVAL_MS = 10.0;
-    static constexpr double PHYSICS_UPDATE_INTERVAL_MS = 3000.0;
     static constexpr double FEATURES_UPDATE_INTERVAL_MS = 10.0;
     
     std::chrono::high_resolution_clock::time_point m_last_cache_update;
     std::chrono::high_resolution_clock::time_point m_last_frame_update;
-    std::chrono::high_resolution_clock::time_point m_last_physics_update;
     std::chrono::high_resolution_clock::time_point m_last_features_update;
 
     Matrix4x4 m_view_matrix = {};
@@ -105,7 +103,6 @@ private:
     
     void update_caches();
     void update_view();
-    void update_physics();
     void update_features();
     void render_features();
     void process_input();

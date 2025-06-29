@@ -3,9 +3,8 @@
 #include <algorithm>
 #include <cmath>
 
-TracelineManager::TracelineManager(WorldCache* world_cache)
-    : m_world_cache(world_cache)
-    , m_initialized(false)
+TracelineManager::TracelineManager()
+    : m_initialized(false)
 {
 }
 
@@ -20,16 +19,9 @@ bool TracelineManager::initialize() {
     logger::log_step("Traceline Manager Init", "Setting up traceline system");
     
     try {
-        if (!m_world_cache) {
-            logger::log_failure("Traceline Manager", "WorldCache is null");
-            return false;
-        }
-        
         m_triangles.clear();
         m_initialized = true;
         
-        rebuild_spatial_optimization();
-
         return true;
         
     } catch (const std::exception& e) {
@@ -48,14 +40,14 @@ void TracelineManager::shutdown() {
     logger::info("TracelineManager shutdown completed");
 }
 
-void TracelineManager::rebuild_spatial_optimization() {
-    if (!m_initialized || !m_world_cache) {
+void TracelineManager::rebuild_spatial_optimization(std::vector<Triangle>& new_triangles) {
+    if (!m_initialized) {
         return;
     }
     
     logger::debug("Rebuilding spatial optimization for traceline");
     
-    m_triangles = m_world_cache->get_triangles();
+    m_triangles = new_triangles;
     
     build_spatial_grid();
     
