@@ -167,6 +167,7 @@
     <ClInclude Include="engine\sdk\offsets\static\client_dll.hpp" />
     <ClInclude Include="engine\sdk\offsets\static\offsets.hpp" />
     <ClInclude Include="engine\sdk\types\entity_impl.hpp" />
+    <ClInclude Include="engine\sdk\types\player_impl.hpp" />
     <ClInclude Include="features\aimbot\settings\aimbot_settings.hpp" />
     <ClInclude Include="features\base_feature.hpp" />
     <ClInclude Include="features\aimbot\aimbot.hpp" />

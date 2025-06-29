@@ -4,6 +4,14 @@
 
 class GameEntity {
 public:
+    GameEntity() : idx(0), list_entry(0) {
+        this->ptr = 0;
+        this->instance = 0;
+        this->class_info = 0;
+        this->schema_class = 0;
+        this->classname_address = 0;
+    }
+    
     GameEntity(int idx, uintptr_t list_entry) : idx(idx), list_entry(list_entry) {
         this->ptr = 0;
         this->instance = 0;

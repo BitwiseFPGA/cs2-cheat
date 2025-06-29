@@ -11,6 +11,7 @@
 #include <thread>
 #include <chrono>
 #include <windows.h>
+#include "sdk/offsets/static/offsets.hpp"
 
 Engine::Engine() 
     : m_running(false)
@@ -149,6 +150,8 @@ void Engine::run() {
             }
             
             update_caches();
+
+			update_view();
             
             update_physics();
             
@@ -327,6 +330,20 @@ void Engine::update_caches() {
     
     if (m_world_cache) {
         m_world_cache->update();
+    }
+}
+
+void Engine::update_view() {
+    if (!m_access_manager) {
+        return;
+    }
+
+    m_view_matrix = m_access_manager->read<Matrix4x4>(
+        m_entity_cache->get_client_dll_base() + cs2_dumper::offsets::client_dll::dwViewMatrix
+    );
+
+    if (should_update_system(m_last_frame_update, FRAME_UPDATE_INTERVAL_MS)) {
+        m_entity_cache->update_frame();
     }
 }
 

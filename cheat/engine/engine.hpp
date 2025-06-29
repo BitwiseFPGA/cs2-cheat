@@ -1,6 +1,7 @@
 #pragma once
 #include <logger/logger.hpp>
 #include <features/base_feature.hpp>
+#include <engine/sdk/math/matrix.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -62,6 +63,8 @@ public:
         return nullptr;
     }
     
+    const Matrix4x4& get_view_matrix() const { return m_view_matrix; }
+
 private:
     bool m_running;
     bool m_initialized;
@@ -79,13 +82,17 @@ private:
     
     static constexpr int MAX_UPDATES_PER_FRAME = 2;
     static constexpr double CACHE_UPDATE_INTERVAL_MS = 1000.0;
+    static constexpr double FRAME_UPDATE_INTERVAL_MS = 10.0;
     static constexpr double PHYSICS_UPDATE_INTERVAL_MS = 1000.0;
     static constexpr double FEATURES_UPDATE_INTERVAL_MS = 100.0;
     
     std::chrono::high_resolution_clock::time_point m_last_cache_update;
+    std::chrono::high_resolution_clock::time_point m_last_frame_update;
     std::chrono::high_resolution_clock::time_point m_last_physics_update;
     std::chrono::high_resolution_clock::time_point m_last_features_update;
     int m_current_frame_updates;
+
+    Matrix4x4 m_view_matrix = {};
     
     bool should_update_system(std::chrono::high_resolution_clock::time_point& last_update, double interval_ms);
     
@@ -97,6 +104,7 @@ private:
     bool initialize_features();
     
     void update_caches();
+    void update_view();
     void update_physics();
     void update_features();
     void render_features();
