@@ -15,7 +15,6 @@ class AutoScatterSystem;
 constexpr int MAX_ENTITIES = 1024;
 constexpr int MAX_PLAYERS = 64;
 
-
 class EntityCache {
 public:
     EntityCache(AccessManager* access_manager);
