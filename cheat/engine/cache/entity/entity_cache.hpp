@@ -28,10 +28,13 @@ public:
     void clear();
     
     // Getters
-    const std::vector<GameEntity>& get_entities() const { return m_entities; }
-    const std::vector<Player>& get_players() const { return m_players; }
+    std::vector<GameEntity>& get_entities() { return m_entities; }
+    std::vector<Player>& get_players() { return m_players; }
+
     Player* get_local_player() { return m_local_player; }
+
     GameEntity* get_c4() { return m_c4; }
+
     uintptr_t get_client_dll_base() const { return m_client_dll_base; }
     uintptr_t get_local_player_ptr() const { return m_local_player_ptr; }
     uintptr_t get_entity_list_ptr() const { return m_entity_list_ptr; }

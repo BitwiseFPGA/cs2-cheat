@@ -4,6 +4,7 @@
 #include <engine/cache/world/world_cache.hpp>
 #include <engine/renderer/renderer.hpp>
 #include <engine/engine.hpp>
+#include <engine/physics/traceline.hpp>
 #include <logger/logger.hpp>
 #include <algorithm>
 
@@ -43,7 +44,7 @@ void EspFeature::render() {
 }
 
 void EspFeature::RenderPlayers() {
-    const auto& players = m_entity_cache->get_players();
+    auto& players = m_entity_cache->get_players();
     if (players.empty()) {
         return;
     }
@@ -53,21 +54,29 @@ void EspFeature::RenderPlayers() {
         return;
     }
 
+	// Get traceline manager
+	auto traceline_manager = m_engine->get_traceline_manager();
+    if (!traceline_manager) {
+        logger::error("Traceline manager is not available");
+        return;
+	}
+
     const auto& view_matrix = m_engine->get_view_matrix();
 
-    for (const auto& player : players) {
+    for (auto& player : players) {
         if (player.health <= 0 || player.origin == Vector3(0, 0, 0))
             continue;
 
-		// Skip local player
         if (player.instance == local_player->instance)
 			continue;
 
-        // Skip teammates if enemy only is enabled
         if (m_settings.enemy_only && player.team == local_player->team)
             continue;
 
-        // Debug draw all pointers
+		Vector3 local_eye_pos = local_player->GetBone(BONE_DEF::HEAD).position;
+		Vector3 target_eye_pos = player.GetBone(BONE_DEF::HEAD).position;
+
+        player.is_visible = traceline_manager->is_visible(local_eye_pos, target_eye_pos);
 
         ImRect box = Drawing::GetBoundingBox(player.bounds.mins, player.bounds.maxs, view_matrix);
         if (box.Min.x == 0 &&

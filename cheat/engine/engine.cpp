@@ -23,7 +23,6 @@ Engine::Engine()
     , m_traceline_manager(nullptr)
     , m_main_menu(nullptr)
     , m_settings_manager(nullptr)
-    , m_current_frame_updates(0)
 {
     auto now = std::chrono::high_resolution_clock::now();
     m_last_cache_update = now;
@@ -142,8 +141,6 @@ void Engine::run() {
     
     while (m_running) {
         try {
-            m_current_frame_updates = 0;
-            
             if (m_renderer) {
                 m_renderer->begin_frame();
                 m_renderer->begin_imgui_frame();
@@ -308,17 +305,12 @@ bool Engine::initialize_features() {
 }
 
 bool Engine::should_update_system(std::chrono::high_resolution_clock::time_point& last_update, double interval_ms) {
-    if (m_current_frame_updates >= MAX_UPDATES_PER_FRAME) {
-        return false;
-    }
-    
     auto now = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(now - last_update);
     double elapsed_ms = duration.count() / 1000.0;
     
     if (elapsed_ms >= interval_ms) {
         last_update = now;
-        m_current_frame_updates++;
         return true;
     }
     

@@ -8,6 +8,26 @@ struct PlayerBone {
     Vector4 rotation;
 };
 
+enum BONE_DEF : short {
+    HIP = 0,
+    SPINE1 = 2,
+    SPINE = 4,
+    NECK = 5,
+    HEAD = 6,
+    LEFT_SHOULDER = 8,
+    LEFT_ARM = 9,
+    LEFT_HAND = 10,
+    RIGHT_SHOULDER = 13,
+    RIGHT_ARM = 14,
+    RIGHT_HAND = 15,
+    LEFT_HIP = 22,
+    LEFT_KNEE = 23,
+    LEFT_FOOT = 24,
+    RIGHT_HIP = 25,
+    RIGHT_KNEE = 26,
+    RIGHT_FOOT = 27
+};
+
 struct BoundingBox {
     Vector3 mins;
     Vector3 maxs;
@@ -50,4 +70,11 @@ public:
     char weaponname_buffer[64] = {};
     std::string player_name = "";
     std::string weapon_name = "";
+
+    PlayerBone GetBone(int index) const {
+        if (index < 0 || index >= MAX_BONES) {
+            return PlayerBone{};
+        }
+        return bones[index];
+	}
 };

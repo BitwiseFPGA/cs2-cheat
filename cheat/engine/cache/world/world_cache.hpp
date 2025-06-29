@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <chrono>
+#include <unordered_set>
 #include <access/access.hpp>
 
 class AccessManager;
@@ -73,5 +74,7 @@ private:
     std::vector<Triangle> m_triangles;
     
     void load_world_triangles();
+    void process_geometry_convex_hulls(const physx::NodeGeometry& geometry);
+    void process_geometry_triangle_meshes(const physx::NodeGeometry& geometry);
 };
 

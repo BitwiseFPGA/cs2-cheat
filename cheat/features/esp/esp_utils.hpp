@@ -7,27 +7,6 @@
 #include <vector>
 #include <utility>
 
-// Bone definitions for skeleton rendering
-enum BONE_DEF : short {
-    HIP = 0,
-    SPINE1 = 2,
-    SPINE = 4,
-    NECK = 5,
-    HEAD = 6,
-    LEFT_SHOULDER = 8,
-    LEFT_ARM = 9,
-    LEFT_HAND = 10,
-    RIGHT_SHOULDER = 13,
-    RIGHT_ARM = 14,
-    RIGHT_HAND = 15,
-    LEFT_HIP = 22,
-    LEFT_KNEE = 23,
-    LEFT_FOOT = 24,
-    RIGHT_HIP = 25,
-    RIGHT_KNEE = 26,
-    RIGHT_FOOT = 27
-};
-
 const std::pair<BONE_DEF, BONE_DEF> BONE_CONNECTIONS[] = {
     {BONE_DEF::HEAD, BONE_DEF::NECK},
     {BONE_DEF::NECK, BONE_DEF::SPINE},
