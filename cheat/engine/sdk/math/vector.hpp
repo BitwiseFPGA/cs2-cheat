@@ -37,6 +37,9 @@ struct Vector3 {
     Vector3& operator-=(const Vector3& other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
     Vector3& operator*=(float scalar) { x *= scalar; y *= scalar; z *= scalar; return *this; }
     Vector3& operator/=(float scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
+
+	bool operator==(const Vector3& other) const { return x == other.x && y == other.y && z == other.z; }
+	bool operator!=(const Vector3& other) const { return !(*this == other); }
     
     float length() const { return sqrt(x * x + y * y + z * z); }
     float length_squared() const { return x * x + y * y + z * z; }

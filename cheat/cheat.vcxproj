@@ -173,6 +173,7 @@
     <ClInclude Include="features\aimbot\aimbot.hpp" />
     <ClInclude Include="features\aimbot\settings.hpp" />
     <ClInclude Include="features\esp\esp.hpp" />
+    <ClInclude Include="features\esp\esp_utils.hpp" />
     <ClInclude Include="features\esp\settings\esp_settings.hpp" />
     <ClInclude Include="features\esp\settings.hpp" />
     <ClInclude Include="features\settings\base_settings.hpp" />

@@ -168,12 +168,6 @@ bool WinApiAccess::read_memory(uint64_t address, void* buffer, size_t size) {
     BOOL result = ReadProcessMemory(m_process_handle, reinterpret_cast<LPCVOID>(address), buffer, size, &bytes_read);
     
     if (!result || bytes_read != size) {
-        DWORD error = GetLastError();
-        std::stringstream ss;
-        ss << "WinAPI: ReadProcessMemory failed for address 0x" << std::hex << address 
-           << " size " << std::dec << size << " bytes_read " << bytes_read 
-           << " error " << error;
-        logger::debug(ss.str());
         return false;
     }
     

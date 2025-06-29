@@ -66,6 +66,11 @@ bool EntityCache::initialize() {
 void EntityCache::shutdown() {
     logger::info("Shutting down EntityCache");
     
+    if (m_scatter_handle && m_access_manager) {
+        m_access_manager->close_scatter_handle(m_scatter_handle);
+        m_scatter_handle = nullptr;
+    }
+    
     clear();
     m_initialized = false;
     
@@ -171,7 +176,16 @@ void EntityCache::fetch_entities() {
 
     // Create new entities and queue scatter reads for their pointers
     for (int i = 0; i < MAX_ENTITIES; i++) {
-        auto& entity = m_new_entities_buffer.emplace_back(i, m_list_entries[(i & 0x7FFF) >> 9]);
+        int list_index = (i & 0x7FFF) >> 9;
+        if (list_index >= static_cast<int>(m_list_entries.size())) {
+            break; // Prevent buffer overflow
+        }
+        
+        auto& entity = m_new_entities_buffer.emplace_back(i, m_list_entries[list_index]);
+        
+        if (entity.list_entry == 0) {
+            continue; // Skip invalid list entries
+        }
         
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
@@ -259,6 +273,9 @@ void EntityCache::fetch_entity_data(std::vector<GameEntity*>& entities_to_update
 
     // Second scatter: get class_info
     for (auto* entity : entities_to_update) {
+        if (entity->instance == 0) {
+            continue; // Skip invalid instances
+        }
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
             entity->instance + 0x8, 
@@ -270,6 +287,9 @@ void EntityCache::fetch_entity_data(std::vector<GameEntity*>& entities_to_update
 
     // Third scatter: get schema_class
     for (auto* entity : entities_to_update) {
+        if (entity->class_info == 0) {
+            continue; // Skip invalid class_info
+        }
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
             entity->class_info + 0x28, 
@@ -281,6 +301,9 @@ void EntityCache::fetch_entity_data(std::vector<GameEntity*>& entities_to_update
 
     // Fourth scatter: get classname_address
     for (auto* entity : entities_to_update) {
+        if (entity->schema_class == 0) {
+            continue; // Skip invalid schema_class
+        }
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
             entity->schema_class + 0x8, 
@@ -292,6 +315,9 @@ void EntityCache::fetch_entity_data(std::vector<GameEntity*>& entities_to_update
 
     // Fifth scatter: get classname_buffer
     for (auto* entity : entities_to_update) {
+        if (entity->classname_address == 0) {
+            continue; // Skip invalid classname_address
+        }
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
             entity->classname_address, 
@@ -326,6 +352,9 @@ void EntityCache::fetch_player_data(std::vector<Player*>& players_to_update) {
 
     // Second scatter: get player list entries
     for (auto* player : players_to_update) {
+        if (player->pawn == 0) {
+            continue; // Skip invalid pawn handles
+        }
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
             m_entity_list_ptr + 8 * ((player->pawn & 0x7FFF) >> 9) + 0x10, 
@@ -337,6 +366,9 @@ void EntityCache::fetch_player_data(std::vector<Player*>& players_to_update) {
 
     // Third scatter: get base entity pointers
     for (auto* player : players_to_update) {
+        if (player->player_list_entry == 0) {
+            continue; // Skip invalid list entries
+        }
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
             player->player_list_entry + 120 * (player->pawn & 0x1FF), 
@@ -348,6 +380,9 @@ void EntityCache::fetch_player_data(std::vector<Player*>& players_to_update) {
 
     // Fourth scatter: get basic player data
     for (auto* player : players_to_update) {
+        if (player->base_entity == 0) {
+            continue; // Skip invalid base entities
+        }
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
             player->base_entity + cs2_dumper::schemas::client_dll::C_BaseEntity::m_pCollision, 
@@ -420,6 +455,9 @@ void EntityCache::fetch_player_data(std::vector<Player*>& players_to_update) {
 
     // Sixth scatter: get weapon name pointers
     for (auto* player : players_to_update) {
+        if (player->weapon_vdata == 0) {
+            continue; // Skip invalid weapon data
+        }
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
             player->weapon_vdata + cs2_dumper::schemas::client_dll::CCSWeaponBaseVData::m_szName, 
@@ -431,6 +469,9 @@ void EntityCache::fetch_player_data(std::vector<Player*>& players_to_update) {
 
     // Seventh scatter: get weapon names
     for (auto* player : players_to_update) {
+        if (player->weapon_nameptr == 0) {
+            continue; // Skip invalid weapon name pointers
+        }
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
             player->weapon_nameptr, 

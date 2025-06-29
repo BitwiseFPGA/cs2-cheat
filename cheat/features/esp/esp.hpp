@@ -29,5 +29,7 @@ public:
     
 private:
     EspSettings m_settings;
+    
+    void RenderPlayers();
 };
 

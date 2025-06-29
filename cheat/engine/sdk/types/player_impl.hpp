@@ -4,7 +4,8 @@
 
 struct PlayerBone {
     Vector3 position;
-    float padding[1];
+    float scale;
+    Vector4 rotation;
 };
 
 struct BoundingBox {
@@ -23,7 +24,7 @@ public:
     Player(int idx, uintptr_t list_entry) : GameEntity(idx, list_entry) {}
     Player(const GameEntity& entity) : GameEntity(entity) {}
 
-    static constexpr int MAX_BONES = 256;
+    static constexpr int MAX_BONES = 30;
 
     uintptr_t pawn = 0;
     uintptr_t player_list_entry = 0;
