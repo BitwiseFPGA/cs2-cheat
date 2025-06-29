@@ -17,5 +17,9 @@ struct Triangle {
         calculate_normal();
     }
     
-    void calculate_normal();
+    void calculate_normal() {
+        Vector3 edge1 = vertices[1] - vertices[0];
+        Vector3 edge2 = vertices[2] - vertices[0];
+        normal = edge1.cross(edge2).normalized();
+    }
 };

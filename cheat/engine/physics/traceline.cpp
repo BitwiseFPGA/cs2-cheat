@@ -167,12 +167,12 @@ void TracelineManager::build_spatial_grid() {
     for (const auto& triangle : m_triangles) {
         for (int i = 0; i < 3; ++i) {
             const Vector3& vertex = triangle.vertices[i];
-            world_min.x = std::min(world_min.x, vertex.x);
-            world_min.y = std::min(world_min.y, vertex.y);
-            world_min.z = std::min(world_min.z, vertex.z);
-            world_max.x = std::max(world_max.x, vertex.x);
-            world_max.y = std::max(world_max.y, vertex.y);
-            world_max.z = std::max(world_max.z, vertex.z);
+            world_min.x = std::min<float>(world_min.x, vertex.x);
+            world_min.y = std::min<float>(world_min.y, vertex.y);
+            world_min.z = std::min<float>(world_min.z, vertex.z);
+            world_max.x = std::max<float>(world_max.x, vertex.x);
+            world_max.y = std::max<float>(world_max.y, vertex.y);
+            world_max.z = std::max<float>(world_max.z, vertex.z);
         }
     }
     
@@ -200,20 +200,20 @@ void TracelineManager::build_spatial_grid() {
         Vector3 tri_max = triangle.vertices[0];
         
         for (int j = 1; j < 3; ++j) {
-            tri_min.x = std::min(tri_min.x, triangle.vertices[j].x);
-            tri_min.y = std::min(tri_min.y, triangle.vertices[j].y);
-            tri_min.z = std::min(tri_min.z, triangle.vertices[j].z);
-            tri_max.x = std::max(tri_max.x, triangle.vertices[j].x);
-            tri_max.y = std::max(tri_max.y, triangle.vertices[j].y);
-            tri_max.z = std::max(tri_max.z, triangle.vertices[j].z);
+            tri_min.x = std::min<float>(tri_min.x, triangle.vertices[j].x);
+            tri_min.y = std::min<float>(tri_min.y, triangle.vertices[j].y);
+            tri_min.z = std::min<float>(tri_min.z, triangle.vertices[j].z);
+            tri_max.x = std::max<float>(tri_max.x, triangle.vertices[j].x);
+            tri_max.y = std::max<float>(tri_max.y, triangle.vertices[j].y);
+            tri_max.z = std::max<float>(tri_max.z, triangle.vertices[j].z);
         }
         
-        int min_x = std::max(0, static_cast<int>((tri_min.x - world_min.x) / m_spatial_grid.cell_size.x));
-        int max_x = std::min(GRID_RESOLUTION - 1, static_cast<int>((tri_max.x - world_min.x) / m_spatial_grid.cell_size.x));
-        int min_y = std::max(0, static_cast<int>((tri_min.y - world_min.y) / m_spatial_grid.cell_size.y));
-        int max_y = std::min(GRID_RESOLUTION - 1, static_cast<int>((tri_max.y - world_min.y) / m_spatial_grid.cell_size.y));
-        int min_z = std::max(0, static_cast<int>((tri_min.z - world_min.z) / m_spatial_grid.cell_size.z));
-        int max_z = std::min(GRID_RESOLUTION - 1, static_cast<int>((tri_max.z - world_min.z) / m_spatial_grid.cell_size.z));
+        int min_x = std::max<int>(0, static_cast<int>((tri_min.x - world_min.x) / m_spatial_grid.cell_size.x));
+        int max_x = std::min<int>(GRID_RESOLUTION - 1, static_cast<int>((tri_max.x - world_min.x) / m_spatial_grid.cell_size.x));
+        int min_y = std::max<int>(0, static_cast<int>((tri_min.y - world_min.y) / m_spatial_grid.cell_size.y));
+        int max_y = std::min<int>(GRID_RESOLUTION - 1, static_cast<int>((tri_max.y - world_min.y) / m_spatial_grid.cell_size.y));
+        int min_z = std::max<int>(0, static_cast<int>((tri_min.z - world_min.z) / m_spatial_grid.cell_size.z));
+        int max_z = std::min<int>(GRID_RESOLUTION - 1, static_cast<int>((tri_max.z - world_min.z) / m_spatial_grid.cell_size.z));
         
         for (int x = min_x; x <= max_x; ++x) {
             for (int y = min_y; y <= max_y; ++y) {
@@ -233,9 +233,9 @@ int TracelineManager::get_grid_cell_index(const Vector3& position) const {
     int y = static_cast<int>(relative_pos.y / m_spatial_grid.cell_size.y);
     int z = static_cast<int>(relative_pos.z / m_spatial_grid.cell_size.z);
     
-    x = std::max(0, std::min(x, m_spatial_grid.grid_width - 1));
-    y = std::max(0, std::min(y, m_spatial_grid.grid_height - 1));
-    z = std::max(0, std::min(z, m_spatial_grid.grid_depth - 1));
+    x = std::max<int>(0, std::min<int>(x, m_spatial_grid.grid_width - 1));
+    y = std::max<int>(0, std::min<int>(y, m_spatial_grid.grid_height - 1));
+    z = std::max<int>(0, std::min<int>(z, m_spatial_grid.grid_depth - 1));
     
     return z * m_spatial_grid.grid_width * m_spatial_grid.grid_height + y * m_spatial_grid.grid_width + x;
 }
@@ -247,7 +247,7 @@ std::vector<int> TracelineManager::get_cells_along_ray(const Vector3& start, con
     float length = direction.length();
     direction = direction.normalized();
     
-    const float STEP_SIZE = std::min({m_spatial_grid.cell_size.x, m_spatial_grid.cell_size.y, m_spatial_grid.cell_size.z}) * 0.5f;
+    const float STEP_SIZE = std::min<float>({m_spatial_grid.cell_size.x, m_spatial_grid.cell_size.y, m_spatial_grid.cell_size.z}) * 0.5f;
     
     for (float t = 0; t <= length; t += STEP_SIZE) {
         Vector3 sample_point = start + direction * t;
