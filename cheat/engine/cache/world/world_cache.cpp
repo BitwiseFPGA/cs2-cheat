@@ -288,7 +288,7 @@ void WorldCache::process_geometry_convex_hulls(const physx::NodeGeometry& geomet
 
         // Create triangles using fan triangulation
         for (int i = 1; i < vertices.size() - 1; i++) {
-            m_triangles.emplace_back(vertices[0], vertices[i], vertices[i + 1], m_triangles.size());
+            m_triangles.emplace_back(vertices[0], vertices[i], vertices[i + 1], static_cast<uint32_t>(m_triangles.size()));
         }
 
     } catch (const std::exception& e) {
@@ -360,7 +360,7 @@ void WorldCache::process_geometry_triangle_meshes(const physx::NodeGeometry& geo
             int idx3 = indices[i * 3 + 2];
 
             if (idx1 < vertices.size() && idx2 < vertices.size() && idx3 < vertices.size()) {
-                m_triangles.emplace_back(vertices[idx1], vertices[idx2], vertices[idx3], m_triangles.size());
+                m_triangles.emplace_back(vertices[idx1], vertices[idx2], vertices[idx3], static_cast<uint32_t>(m_triangles.size()));
             }
         }
 
