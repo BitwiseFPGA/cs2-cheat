@@ -44,7 +44,15 @@ void EspFeature::render() {
 
 void EspFeature::RenderPlayers() {
     const auto& players = m_entity_cache->get_players();
+    if (players.empty()) {
+        return;
+    }
+
     Player* local_player = m_entity_cache->get_local_player();
+    if (!local_player) {
+        return;
+    }
+
     const auto& view_matrix = m_engine->get_view_matrix();
 
     for (const auto& player : players) {
@@ -52,12 +60,14 @@ void EspFeature::RenderPlayers() {
             continue;
 
 		// Skip local player
-        if (local_player && player.instance == local_player->instance)
+        if (player.instance == local_player->instance)
 			continue;
 
         // Skip teammates if enemy only is enabled
-        if (m_settings.enemy_only && local_player && player.team == local_player->team)
+        if (m_settings.enemy_only && player.team == local_player->team)
             continue;
+
+        // Debug draw all pointers
 
         ImRect box = Drawing::GetBoundingBox(player.bounds.mins, player.bounds.maxs, view_matrix);
         if (box.Min.x == 0 &&

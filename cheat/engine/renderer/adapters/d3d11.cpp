@@ -355,8 +355,7 @@ void D3D11Renderer::end_frame() {
 
 void D3D11Renderer::present() {
     if (!m_initialized) return;
-    m_swap_chain->Present(0, 0);
-
+    
     auto current_time = std::chrono::high_resolution_clock::now();
     auto delta_time = std::chrono::duration<float>(current_time - m_last_time).count();
     m_last_time = current_time;
@@ -369,6 +368,8 @@ void D3D11Renderer::present() {
         m_frame_time_accumulator = 0.0f;
         m_frame_count = 0;
     }
+    
+    m_swap_chain->Present(0, 0);
 }
 
 void D3D11Renderer::begin_imgui_frame() {

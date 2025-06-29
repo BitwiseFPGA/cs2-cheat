@@ -120,7 +120,7 @@ namespace logger {
         }
     }
     
-    void warn(const std::string& message) {
+    void warning(const std::string& message) {
         if constexpr (!should_log(LogLevel::LOG_WARN)) return;
         
 #ifdef _WIN32
