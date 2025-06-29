@@ -164,10 +164,9 @@
     <ClInclude Include="engine\sdk\math\triangle.hpp" />
     <ClInclude Include="engine\sdk\math\vector.hpp" />
     <ClInclude Include="engine\cache\world\world_cache.hpp" />
-    <ClInclude Include="engine\sdk\types\base\entity_base.hpp" />
-    <ClInclude Include="engine\sdk\types\base\player_base.hpp" />
-    <ClInclude Include="engine\sdk\types\impl\entity_impl.hpp" />
-    <ClInclude Include="engine\sdk\types\impl\player_impl.hpp" />
+    <ClInclude Include="engine\sdk\offsets\static\client_dll.hpp" />
+    <ClInclude Include="engine\sdk\offsets\static\offsets.hpp" />
+    <ClInclude Include="engine\sdk\types\entity_impl.hpp" />
     <ClInclude Include="features\aimbot\settings\aimbot_settings.hpp" />
     <ClInclude Include="features\base_feature.hpp" />
     <ClInclude Include="features\aimbot\aimbot.hpp" />
@@ -194,8 +193,6 @@
     <ClCompile Include="engine\cache\world\world_cache.cpp" />
     <ClCompile Include="engine\physics\traceline.cpp" />
     <ClCompile Include="engine\renderer\adapters\d3d11.cpp" />
-    <ClCompile Include="engine\sdk\types\impl\entity_impl.cpp" />
-    <ClCompile Include="engine\sdk\types\impl\player_impl.cpp" />
     <ClCompile Include="features\aimbot\settings\aimbot_settings.cpp" />
     <ClCompile Include="features\aimbot\aimbot.cpp" />
     <ClCompile Include="features\base_feature.cpp" />

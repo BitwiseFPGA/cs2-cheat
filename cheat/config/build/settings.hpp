@@ -1,8 +1,8 @@
 #pragma once
 
 #define VERSION "1.0.0" // Version of the cheat
-#define CHEAT_NAME "template-cheat" // Name of the cheat (used for logging and config file)
-#define TARGET_PROCESS_NAME "notepad.exe" // Process to read and write memory from
+#define CHEAT_NAME "cs2-cheat" // Name of the cheat (used for logging and config file)
+#define TARGET_PROCESS_NAME "cs2.exe" // Process to read and write memory from
 #define CONFIG_FILE_NAME "config.json" // Settings file name
 
 #define USE_DMA_MEMORY 0 // Otherwise, use the Windows API to read and write memory

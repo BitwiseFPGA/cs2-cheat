@@ -1,7 +1,6 @@
 #pragma once
 #include <logger/logger.hpp>
 #include <engine/sdk/math/vector.hpp>
-#include <engine/sdk/types/impl/player_impl.hpp>
 #include <features/base_feature.hpp>
 #include <features/aimbot/settings/aimbot_settings.hpp>
 #include <memory>
