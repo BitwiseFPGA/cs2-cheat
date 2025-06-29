@@ -35,7 +35,7 @@ public:
     bool enemy_only = true;
 
     BOX_TYPE box_type = BOX_TYPE::BOX_2D;
-    int player_info = PLAYER_INFO_NAME | PLAYER_INFO_WEAPON | PLAYER_INFO_HEALTHBAR;
+    int player_info = PLAYER_INFO_NAME | PLAYER_INFO_WEAPON | PLAYER_INFO_HEALTHBAR | PLAYER_INFO_SKELETON;
     bool player_visibility_check = true;
 
     ImColor box_color = ImColor(1.0f, 0.0f, 0.0f, 1.0f);

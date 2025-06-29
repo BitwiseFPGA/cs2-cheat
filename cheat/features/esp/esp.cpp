@@ -179,7 +179,13 @@ void EspFeature::RenderPlayers() {
                 if (!m_engine->world_to_screen(bone2.position, bone2_screen_pos))
                     continue;
 
-                DrawLine(bone1_screen_pos, bone2_screen_pos, 1.f, player_color);
+				bool is_bone1_visible = traceline_manager->is_visible(local_eye_pos, bone1.position);
+				bool is_bone2_visible = traceline_manager->is_visible(local_eye_pos, bone2.position);
+
+                ImColor bone_color = (is_bone1_visible && is_bone2_visible) ?
+                    m_settings.player_color_visible : m_settings.player_color_invisible;
+
+                DrawLine(bone1_screen_pos, bone2_screen_pos, 1.f, bone_color);
             }
         }
 

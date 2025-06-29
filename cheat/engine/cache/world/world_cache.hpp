@@ -78,4 +78,3 @@ private:
     void process_geometry_convex_hulls(const physx::NodeGeometry& geometry);
     void process_geometry_triangle_meshes(const physx::NodeGeometry& geometry);
 };
-
