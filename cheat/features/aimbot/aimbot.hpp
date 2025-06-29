@@ -10,10 +10,11 @@ class EntityCache;
 class WorldCache;
 class SettingsManager;
 class Renderer;
+class Engine;
 
 class AimbotFeature : public BaseFeature {
 public:
-    AimbotFeature(EntityCache* entity_cache, WorldCache* world_cache, Renderer* renderer);
+    AimbotFeature(EntityCache* entity_cache, WorldCache* world_cache, Renderer* renderer, Engine* engine);
     ~AimbotFeature();
     
     bool initialize() override;

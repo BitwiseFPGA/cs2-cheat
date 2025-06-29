@@ -10,10 +10,11 @@
 class EntityCache;
 class WorldCache;
 class Renderer;
+class Engine;
 
 class EspFeature : public BaseFeature {
 public:
-    EspFeature(EntityCache* entity_cache, WorldCache* world_cache, Renderer* renderer);
+    EspFeature(EntityCache* entity_cache, WorldCache* world_cache, Renderer* renderer, Engine* engine);
     ~EspFeature();
     
     bool initialize() override;

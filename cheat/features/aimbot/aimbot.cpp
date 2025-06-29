@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <cmath>
 
-AimbotFeature::AimbotFeature(EntityCache* entity_cache, WorldCache* world_cache, Renderer* renderer)
-    : BaseFeature("Aimbot", entity_cache, world_cache, renderer)
+AimbotFeature::AimbotFeature(EntityCache* entity_cache, WorldCache* world_cache, Renderer* renderer, Engine* engine)
+    : BaseFeature("Aimbot", entity_cache, world_cache, renderer, engine)
 {
     logger::debug("Aimbot Feature created");
 }

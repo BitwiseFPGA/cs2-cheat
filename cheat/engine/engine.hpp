@@ -65,6 +65,8 @@ public:
     
     const Matrix4x4& get_view_matrix() const { return m_view_matrix; }
 
+    bool world_to_screen(const Vector3& world_pos, Vector2& screen_pos) const;
+
 private:
     bool m_running;
     bool m_initialized;

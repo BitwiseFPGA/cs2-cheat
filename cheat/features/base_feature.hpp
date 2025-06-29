@@ -6,10 +6,11 @@
 
 class EntityCache;
 class WorldCache;
+class Engine;
 
 class BaseFeature {
 public:
-    BaseFeature(const std::string& feature_name, EntityCache* entity_cache = nullptr, WorldCache* world_cache = nullptr, Renderer* renderer = nullptr);
+    BaseFeature(const std::string& feature_name, EntityCache* entity_cache = nullptr, WorldCache* world_cache = nullptr, Renderer* renderer = nullptr, Engine* engine = nullptr);
     virtual ~BaseFeature();
     
     virtual bool initialize() = 0;
@@ -30,6 +31,7 @@ public:
     EntityCache* get_entity_cache() const { return m_entity_cache; }
     WorldCache* get_world_cache() const { return m_world_cache; }
     Renderer* get_renderer() const { return m_renderer; }
+    Engine* get_engine() const { return m_engine; }
     
 protected:
     std::string m_feature_name;
@@ -39,6 +41,7 @@ protected:
     EntityCache* m_entity_cache;
     WorldCache* m_world_cache;
     Renderer* m_renderer;
+    Engine* m_engine;
 };
 
 using FeaturePtr = std::shared_ptr<BaseFeature>; 

@@ -10,7 +10,7 @@ public:
     void to_json(nlohmann::json& j) const override;
     void from_json(const nlohmann::json& j) override;
     
-    bool enabled = false;
+    bool enabled = true;
     bool show_boxes = true;
     bool show_names = true;
     bool show_health = true;

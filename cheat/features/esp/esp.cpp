@@ -2,11 +2,12 @@
 #include <engine/cache/entity/entity_cache.hpp>
 #include <engine/cache/world/world_cache.hpp>
 #include <engine/renderer/renderer.hpp>
+#include <engine/engine.hpp>
 #include <logger/logger.hpp>
 #include <algorithm>
 
-EspFeature::EspFeature(EntityCache* entity_cache, WorldCache* world_cache, Renderer* renderer)
-    : BaseFeature("ESP", entity_cache, world_cache, renderer)
+EspFeature::EspFeature(EntityCache* entity_cache, WorldCache* world_cache, Renderer* renderer, Engine* engine)
+    : BaseFeature("ESP", entity_cache, world_cache, renderer, engine)
 {
     logger::debug("ESP Feature created");
 }
@@ -35,9 +36,20 @@ void EspFeature::update() {
 }
 
 void EspFeature::render() {
-    if (!is_feature_enabled() || !m_initialized || !m_renderer) {
+    if (!is_feature_enabled() || !m_initialized || !m_renderer || !m_engine || !m_entity_cache) {
         return;
     }
+    
+    const auto& players = m_entity_cache->get_players();
+    
+    for (const auto& player : players) {
+        if (player.health <= 0) {
+            continue;
+        }
         
-    m_renderer->draw_rect(m_renderer->get_screen_center(), Vector2(100, 100), m_settings.box_color, 1.0f);
+        Vector2 screen_pos;
+        if (m_engine->world_to_screen(player.origin, screen_pos)) {
+            m_renderer->draw_filled_circle(screen_pos, 5.0f, m_settings.box_color, 16);
+        }
+    }
 }

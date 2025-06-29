@@ -261,8 +261,8 @@ bool Engine::initialize_menu_and_settings() {
 
 bool Engine::initialize_features() {    
     try {
-        add_feature<AimbotFeature>(m_entity_cache.get(), m_world_cache.get(), m_renderer.get());
-        add_feature<EspFeature>(m_entity_cache.get(), m_world_cache.get(), m_renderer.get());
+        add_feature<AimbotFeature>(m_entity_cache.get(), m_world_cache.get(), m_renderer.get(), this);
+        add_feature<EspFeature>(m_entity_cache.get(), m_world_cache.get(), m_renderer.get(), this);
         
         for (auto& feature : m_features) {
             if (feature) {
@@ -415,4 +415,38 @@ void Engine::add_feature(FeaturePtr feature) {
     } else {
         logger::error("Cannot add null feature");
     }
+}
+
+bool Engine::world_to_screen(const Vector3& world_pos, Vector2& screen_pos) const {
+    if (!m_renderer) {
+        return false;
+    }
+    
+    Vector2 screen_size = m_renderer->get_screen_size();
+    
+    Vector4 clip_coords = {
+        world_pos.x * m_view_matrix.m[0][0] + world_pos.y * m_view_matrix.m[0][1] + world_pos.z * m_view_matrix.m[0][2] + m_view_matrix.m[0][3],
+        world_pos.x * m_view_matrix.m[1][0] + world_pos.y * m_view_matrix.m[1][1] + world_pos.z * m_view_matrix.m[1][2] + m_view_matrix.m[1][3],
+        world_pos.x * m_view_matrix.m[2][0] + world_pos.y * m_view_matrix.m[2][1] + world_pos.z * m_view_matrix.m[2][2] + m_view_matrix.m[2][3],
+        world_pos.x * m_view_matrix.m[3][0] + world_pos.y * m_view_matrix.m[3][1] + world_pos.z * m_view_matrix.m[3][2] + m_view_matrix.m[3][3]
+    };
+    
+    if (clip_coords.w < 0.001f) {
+        return false;
+    }
+    
+    Vector3 ndc = {
+        clip_coords.x / clip_coords.w,
+        clip_coords.y / clip_coords.w,
+        clip_coords.z / clip_coords.w
+    };
+    
+    if (ndc.x < -1.0f || ndc.x > 1.0f || ndc.y < -1.0f || ndc.y > 1.0f) {
+        return false;
+    }
+    
+    screen_pos.x = (ndc.x + 1.0f) * 0.5f * screen_size.x;
+    screen_pos.y = (1.0f - ndc.y) * 0.5f * screen_size.y;
+    
+    return true;
 }
