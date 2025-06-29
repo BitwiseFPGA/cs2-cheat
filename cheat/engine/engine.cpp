@@ -351,10 +351,7 @@ void Engine::update_physics() {
     }
     
     if (m_traceline_manager && m_world_cache) {
-        if (m_world_cache->triangles_updated()) {
-            m_traceline_manager->rebuild_spatial_optimization();
-            m_world_cache->mark_triangles_clean();
-        }
+        m_traceline_manager->rebuild_spatial_optimization();
     }
 }
 

@@ -60,14 +60,12 @@ public:
     
     const std::vector<Triangle>& get_triangles() const { return m_triangles; }
     
-    bool triangles_updated() const { return m_triangles_dirty; }
-    void mark_triangles_clean() { m_triangles_dirty = false; }
-    
 private:
     AccessManager* m_access_manager;
     ScatterHandle m_scatter_handle;
     bool m_initialized;
-    bool m_triangles_dirty;
+
+    std::uintptr_t prev_physx_world;
     
     std::chrono::milliseconds m_last_update;
     

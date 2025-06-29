@@ -5,7 +5,6 @@
 WorldCache::WorldCache(AccessManager* access_manager)
     : m_access_manager(access_manager)
     , m_initialized(false)
-    , m_triangles_dirty(false)
 	, m_scatter_handle(nullptr)
     , m_last_update(std::chrono::milliseconds(0))
 {
@@ -75,7 +74,6 @@ void WorldCache::update() {
 void WorldCache::clear() {
     logger::debug("Clearing world cache");
     m_triangles.clear();
-    m_triangles_dirty = true;
 }
 
 void WorldCache::load_world_triangles() {
@@ -134,6 +132,13 @@ void WorldCache::load_world_triangles() {
             logger::error("Invalid physx world address");
             return;
         }
+
+        if (prev_physx_world == physx_world) {
+            logger::debug("PhysX world has not changed, skipping load");
+            return;
+		}
+
+		prev_physx_world = physx_world;
 
         // Fourth batch: Read spatial trees base
         m_access_manager->add_scatter_read(m_scatter_handle, physx_world + physx::spatial_trees_base, &spatial_trees_base, sizeof(spatial_trees_base));
@@ -244,7 +249,6 @@ void WorldCache::load_world_triangles() {
             }
         }
 
-        m_triangles_dirty = true;
         logger::debug("Loaded " + std::to_string(m_triangles.size()) + " triangles from world cache");
 
     } catch (const std::exception& e) {
