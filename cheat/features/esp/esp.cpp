@@ -31,8 +31,6 @@ void EspFeature::update() {
     if (!is_feature_enabled() || !m_initialized) {
         return;
     }
-    
-    logger::debug("Updating ESP Feature");
 }
 
 void EspFeature::render() {

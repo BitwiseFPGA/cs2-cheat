@@ -18,6 +18,6 @@
     #ifdef _DEBUG
         #define LOG_LEVEL 0
     #else
-        #define LOG_LEVEL 1
+        #define LOG_LEVEL 0
     #endif
 #endif
