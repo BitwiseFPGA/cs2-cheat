@@ -2,7 +2,7 @@
 #include <features/esp/esp_utils.hpp>
 #include <engine/cache/entity/entity_cache.hpp>
 #include <engine/cache/world/world_cache.hpp>
-#include <engine/renderer/renderer.hpp>
+#include <renderer/renderer.hpp>
 #include <engine/engine.hpp>
 #include <engine/physics/traceline.hpp>
 #include <logger/logger.hpp>

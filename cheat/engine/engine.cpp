@@ -3,7 +3,7 @@
 #include <engine/cache/entity/entity_cache.hpp>
 #include <engine/cache/world/world_cache.hpp>
 #include <engine/physics/traceline.hpp>
-#include <engine/renderer/adapters/d3d11.hpp>
+#include <renderer/adapters/d3d11.hpp>
 #include <features/aimbot/aimbot.hpp>
 #include <features/esp/esp.hpp>
 #include <config/runtime/settings.hpp>

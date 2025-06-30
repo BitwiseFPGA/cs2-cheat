@@ -1,7 +1,7 @@
 #include <features/aimbot/aimbot.hpp>
 #include <engine/cache/entity/entity_cache.hpp>
 #include <engine/cache/world/world_cache.hpp>
-#include <engine/renderer/renderer.hpp>
+#include <renderer/renderer.hpp>
 #include <logger/logger.hpp>
 #include <algorithm>
 #include <cmath>

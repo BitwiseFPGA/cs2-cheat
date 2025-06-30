@@ -160,8 +160,8 @@
     <ClInclude Include="engine\cache\entity\entity_cache.hpp" />
     <ClInclude Include="engine\sdk\offsets\methods\extractor.hpp" />
     <ClInclude Include="engine\physics\traceline.hpp" />
-    <ClInclude Include="engine\renderer\adapters\d3d11.hpp" />
-    <ClInclude Include="engine\renderer\renderer.hpp" />
+    <ClInclude Include="renderer\adapters\d3d11.hpp" />
+    <ClInclude Include="renderer\renderer.hpp" />
     <ClInclude Include="engine\sdk\math\matrix.hpp" />
     <ClInclude Include="engine\sdk\math\triangle.hpp" />
     <ClInclude Include="engine\sdk\math\vector.hpp" />
@@ -196,7 +196,7 @@
     <ClCompile Include="engine\cache\entity\entity_cache.cpp" />
     <ClCompile Include="engine\cache\world\world_cache.cpp" />
     <ClCompile Include="engine\physics\traceline.cpp" />
-    <ClCompile Include="engine\renderer\adapters\d3d11.cpp" />
+    <ClCompile Include="renderer\adapters\d3d11.cpp" />
     <ClCompile Include="features\aimbot\settings\aimbot_settings.cpp" />
     <ClCompile Include="features\aimbot\aimbot.cpp" />
     <ClCompile Include="features\base_feature.cpp" />
