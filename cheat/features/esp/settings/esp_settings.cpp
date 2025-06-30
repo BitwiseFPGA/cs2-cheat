@@ -62,16 +62,29 @@ void EspSettings::render_imgui() {
                 
                 // Player colors
                 ImGui::Text("Colors:");
-                ImGui::ColorEdit4("Visible Color", (float*)&player.color_visible);
-                ImGui::ColorEdit4("Invisible Color", (float*)&player.color_invisible);
-                ImGui::ColorEdit4("Name Color", (float*)&player.name_color);
-                ImGui::ColorEdit4("Box Color", (float*)&player.box_color);
+                
+                // Box colors section
+                ImGui::Text("Box Colors:");
+                ImGui::ColorEdit4("Box Outline", (float*)&player.box_color);
                 if (player.box_type == BOX_TYPE::BOX_2D_FILLED) {
-                    ImGui::ColorEdit4("Box Fill Color", (float*)&player.box_fill_color);
+                    ImGui::ColorEdit4("Box Fill", (float*)&player.box_fill_color);
                 }
                 if (player.box_shadow && player.box_type != BOX_TYPE::BOX_NONE) {
-                    ImGui::ColorEdit4("Box Shadow Color", (float*)&player.box_shadow_color);
+                    ImGui::ColorEdit4("Box Shadow", (float*)&player.box_shadow_color);
                 }
+                
+                ImGui::Separator();
+                
+                // Visibility colors section
+                ImGui::Text("Visibility Colors (for skeleton, etc.):");
+                ImGui::ColorEdit4("Visible Color", (float*)&player.color_visible);
+                ImGui::ColorEdit4("Invisible Color", (float*)&player.color_invisible);
+                
+                ImGui::Separator();
+                
+                // Text colors
+                ImGui::Text("Text Colors:");
+                ImGui::ColorEdit4("Name Color", (float*)&player.name_color);
             }
             
             ImGui::EndTabItem();

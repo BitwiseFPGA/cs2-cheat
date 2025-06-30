@@ -61,8 +61,8 @@ public:
         ImColor color_visible = ImColor(0.0f, 1.0f, 0.0f, 1.0f);
         ImColor color_invisible = ImColor(1.0f, 0.0f, 0.0f, 1.0f);
         ImColor name_color = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
-        ImColor box_color = ImColor(1.0f, 0.0f, 0.0f, 1.0f);
-        ImColor box_fill_color = ImColor(1.0f, 0.0f, 0.0f, 0.2f);
+        ImColor box_color = ImColor(1.0f, 1.0f, 1.0f, 1.0f); // White boxes by default
+        ImColor box_fill_color = ImColor(1.0f, 1.0f, 1.0f, 0.1f); // Very transparent white fill
         ImColor box_shadow_color = ImColor(0.0f, 0.0f, 0.0f, 0.8f);
     } player;
     
@@ -76,12 +76,12 @@ public:
         bool box_shadow = true;
         float box_shadow_offset = 1.0f;
         
-        ImColor weapon_color = ImColor(1.0f, 1.0f, 0.0f, 1.0f);
-        ImColor grenade_color = ImColor(1.0f, 0.5f, 0.0f, 1.0f);
-        ImColor c4_color = ImColor(1.0f, 0.0f, 0.0f, 1.0f);
-        ImColor hostage_color = ImColor(0.0f, 0.0f, 1.0f, 1.0f);
-        ImColor chicken_color = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
-        ImColor other_color = ImColor(0.5f, 0.5f, 0.5f, 1.0f);
+        ImColor weapon_color = ImColor(1.0f, 1.0f, 1.0f, 1.0f); // White for weapons
+        ImColor grenade_color = ImColor(1.0f, 0.5f, 0.0f, 1.0f); // Orange for grenades
+        ImColor c4_color = ImColor(1.0f, 0.0f, 0.0f, 1.0f); // Red for C4
+        ImColor hostage_color = ImColor(0.0f, 0.5f, 1.0f, 1.0f); // Light blue for hostages
+        ImColor chicken_color = ImColor(1.0f, 1.0f, 0.0f, 1.0f); // Yellow for chickens
+        ImColor other_color = ImColor(0.8f, 0.8f, 0.8f, 1.0f); // Light gray for other items
         ImColor name_color = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
         ImColor box_shadow_color = ImColor(0.0f, 0.0f, 0.0f, 0.8f);
     } entities;

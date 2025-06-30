@@ -115,6 +115,9 @@ void EspFeature::RenderPlayers() {
         ImColor player_color = (m_settings.player.visibility_check && !player.is_visible)
             ? m_settings.player.color_invisible
             : m_settings.player.color_visible;
+        
+        // Use dedicated box color for boxes, not visibility-based color
+        ImColor box_color = m_settings.player.box_color;
 
         bool should_draw_details = (distance < 100.f);
 
@@ -127,7 +130,7 @@ void EspFeature::RenderPlayers() {
             DrawRectWithOptions(
                 Vector2(box.Min.x, box.Min.y),
                 Vector2(box.Max.x, box.Max.y),
-                player_color,
+                box_color,
                 1.f,
                 false, // corners_only
                 Vector2(0, 0), // corner_size
@@ -140,7 +143,7 @@ void EspFeature::RenderPlayers() {
             DrawRectWithOptions(
                 Vector2(box.Min.x, box.Min.y),
                 Vector2(box.Max.x, box.Max.y),
-                player_color,
+                box_color,
                 1.f,
                 true, // corners_only
                 Vector2(
@@ -156,7 +159,7 @@ void EspFeature::RenderPlayers() {
             DrawRectWithOptions(
                 Vector2(box.Min.x, box.Min.y),
                 Vector2(box.Max.x, box.Max.y),
-                player_color,
+                box_color,
                 1.f,
                 false, // corners_only
                 Vector2(0, 0), // corner_size
