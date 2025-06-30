@@ -68,7 +68,8 @@ private:
     ScatterHandle m_scatter_handle;
     bool m_initialized;
 
-    std::uintptr_t prev_physx_world;
+    std::uintptr_t m_client_dll_base;
+    std::uintptr_t m_prev_physx_world;
     
     std::chrono::milliseconds m_last_update;
     

@@ -24,7 +24,6 @@ private:
     
     std::vector<Triangle> m_triangles;
     
-    // Embree-specific members
     RTCDevice m_device;
     RTCScene m_scene;
     RTCGeometry m_geometry;
