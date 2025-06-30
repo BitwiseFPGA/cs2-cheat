@@ -251,7 +251,7 @@ void WorldCache::load_world_triangles() {
         }
 
         logger::debug("Loaded " + std::to_string(m_triangles.size()) + " triangles from world cache");
-        m_traceline_manager->rebuild_spatial_optimization(m_triangles);
+        m_traceline_manager->rebuild(m_triangles);
 
     } catch (const std::exception& e) {
         logger::error("Exception in load_world_triangles: " + std::string(e.what()));
