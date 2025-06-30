@@ -82,7 +82,7 @@ private:
     
     std::vector<FeaturePtr> m_features;
     
-    static constexpr double CACHE_UPDATE_INTERVAL_MS = 1000.0;
+    static constexpr double CACHE_UPDATE_INTERVAL_MS = 100.0;
     static constexpr double FRAME_UPDATE_INTERVAL_MS = 10.0;
     static constexpr double FEATURES_UPDATE_INTERVAL_MS = 10.0;
     

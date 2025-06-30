@@ -87,6 +87,7 @@ void EntityCache::update() {
 
         fetch_globals();
         fetch_entities();
+		update_frame();
 
         m_last_update = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch());
@@ -134,15 +135,6 @@ void EntityCache::fetch_entities() {
         return;
     }
 
-    m_entities.erase(
-        std::remove_if(m_entities.begin(), m_entities.end(),
-            [](GameEntity& entity) {
-                return !entity.instance || !entity.gamescene_node || !entity.ptr || !entity.classname_hash; 
-            }
-        ),
-        m_entities.end()
-    );
-
     m_list_entries.resize(MAX_ENTITIES);
 
     m_access_manager->add_scatter_read(
@@ -154,26 +146,9 @@ void EntityCache::fetch_entities() {
 
     m_access_manager->scatter_read(m_scatter_handle);
 
-    m_entity_cache_buffer.clear();
-    m_player_cache_buffer.clear();
-    m_entity_cache_buffer.reserve(m_entities.size());
-    m_player_cache_buffer.reserve(m_players.size());
-
     auto make_key = [](uintptr_t list_entry, int idx) -> uint64_t {
         return (static_cast<uint64_t>(list_entry) << 32) | static_cast<uint64_t>(idx);
     };
-
-    for (const auto& entity : m_entities) {
-        if (entity.ptr != 0) {
-            m_entity_cache_buffer[make_key(entity.list_entry, entity.idx)] = entity;
-        }
-    }
-    
-    for (const auto& player : m_players) {
-        if (player.ptr != 0) {
-            m_player_cache_buffer[make_key(player.list_entry, player.idx)] = player;
-        }
-    }
 
     m_new_entities_buffer.clear();
     m_new_entities_buffer.reserve(MAX_ENTITIES);
@@ -187,10 +162,6 @@ void EntityCache::fetch_entities() {
         }
         
         auto& entity = m_new_entities_buffer.emplace_back(i, m_list_entries[list_index]);
-        
-        if (entity.list_entry == 0) {
-            continue;
-        }
         
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
@@ -220,15 +191,6 @@ void EntityCache::fetch_entities() {
     if (!m_entities_to_update_buffer.empty()) {
         fetch_entity_data(m_entities_to_update_buffer);
     }
-
-    m_entities_to_update_buffer.erase(
-        std::remove_if(m_entities_to_update_buffer.begin(), m_entities_to_update_buffer.end(),
-            [](GameEntity* entity) {
-                return !entity->instance || !entity->gamescene_node; 
-            }
-        ),
-        m_entities_to_update_buffer.end()
-    );
 
     m_new_players_buffer.clear();
     m_new_players_buffer.reserve(MAX_PLAYERS + 1);
@@ -277,17 +239,29 @@ void EntityCache::fetch_entities() {
         fetch_player_data(m_players_to_update_buffer);
     }
 
-    m_players_to_update_buffer.erase(
-        std::remove_if(m_players_to_update_buffer.begin(), m_players_to_update_buffer.end(),
-            [](Player* player) {
-                return !player->pawn || player->health <= 0 || player->collision == 0 || player->base_entity == 0; 
-            }
-        ),
-        m_players_to_update_buffer.end()
-    );
+    int players_cached = static_cast<int>(m_new_players_buffer.size()) - static_cast<int>(m_players_to_update_buffer.size());
+    int players_reread = static_cast<int>(m_players_to_update_buffer.size());
+    logger::debug("Player Cache Stats - Cached: " + std::to_string(players_cached) + ", Re-read: " + std::to_string(players_reread));
 
     m_entities = std::move(m_new_entities_buffer);
     m_players = std::move(m_new_players_buffer);
+
+    m_entity_cache_buffer.clear();
+    m_player_cache_buffer.clear();
+    m_entity_cache_buffer.reserve(m_entities.size());
+    m_player_cache_buffer.reserve(m_players.size());
+
+    for (const auto& entity : m_entities) {
+        if (entity.ptr != 0) {
+            m_entity_cache_buffer[make_key(entity.list_entry, entity.idx)] = entity;
+        }
+    }
+    
+    for (const auto& player : m_players) {
+        if (player.ptr != 0) {
+            m_player_cache_buffer[make_key(player.list_entry, player.idx)] = player;
+        }
+    }
 }
 
 void EntityCache::fetch_entity_data(std::vector<GameEntity*>& entities_to_update) {
@@ -373,16 +347,6 @@ void EntityCache::fetch_player_data(std::vector<Player*>& players_to_update) {
     if (!m_scatter_handle || players_to_update.empty() || m_entity_list_ptr == 0) {
         return;
     }
-
-    for (auto* player : players_to_update) {
-        m_access_manager->add_scatter_read(
-            m_scatter_handle, 
-            player->ptr + cs2_dumper::schemas::client_dll::CCSPlayerController::m_hPlayerPawn, 
-            &player->pawn, 
-            sizeof(player->pawn)
-        );
-    }
-    m_access_manager->scatter_read(m_scatter_handle);
 
     for (auto* player : players_to_update) {
         m_access_manager->add_scatter_read(
@@ -520,89 +484,63 @@ void EntityCache::update_frame() {
     }
 
     for (auto& player : m_players) {
-        if (player.gamescene_node != 0 && player.base_entity != 0 && player.collision != 0) {
-            m_access_manager->add_scatter_read(
-                m_scatter_handle, 
-                player.gamescene_node + cs2_dumper::schemas::client_dll::CGameSceneNode::m_vecOrigin, 
-                &player.origin, 
-                sizeof(player.origin)
-            );
-            m_access_manager->add_scatter_read(
-                m_scatter_handle, 
-                player.base_entity + cs2_dumper::schemas::client_dll::C_BaseEntity::m_iHealth, 
-                &player.health, 
-                sizeof(player.health)
-            );
-            m_access_manager->add_scatter_read(
-                m_scatter_handle, 
-                player.base_entity + cs2_dumper::schemas::client_dll::C_CSPlayerPawn::m_ArmorValue, 
-                &player.armor, 
-                sizeof(player.armor)
-            );
-            m_access_manager->add_scatter_read(
-                m_scatter_handle, 
-                player.collision + cs2_dumper::schemas::client_dll::CCollisionProperty::m_vecMins, 
-                &player.bounds, 
-                sizeof(player.bounds)
-            );
-            m_access_manager->add_scatter_read(
-                m_scatter_handle, 
-                player.ptr + cs2_dumper::schemas::client_dll::CCSPlayerController::m_bPawnHasHelmet, 
-                &player.has_helmet, 
-                sizeof(player.has_helmet)
-            );
-            m_access_manager->add_scatter_read(
-                m_scatter_handle, 
-                player.ptr + cs2_dumper::schemas::client_dll::CCSPlayerController::m_bPawnHasDefuser, 
-                &player.has_defuser, 
-                sizeof(player.has_defuser)
-            );
-            m_access_manager->add_scatter_read(
-                m_scatter_handle, 
-                player.base_entity + cs2_dumper::schemas::client_dll::C_BaseEntity::m_iTeamNum, 
-                &player.team, 
-                sizeof(player.team)
-            );
+        m_access_manager->add_scatter_read(
+           m_scatter_handle, 
+           player.gamescene_node + cs2_dumper::schemas::client_dll::CGameSceneNode::m_vecOrigin, 
+           &player.origin, 
+           sizeof(player.origin)
+       );
+       m_access_manager->add_scatter_read(
+           m_scatter_handle, 
+           player.base_entity + cs2_dumper::schemas::client_dll::C_BaseEntity::m_iHealth, 
+           &player.health, 
+           sizeof(player.health)
+       );
+       m_access_manager->add_scatter_read(
+           m_scatter_handle, 
+           player.base_entity + cs2_dumper::schemas::client_dll::C_CSPlayerPawn::m_ArmorValue, 
+           &player.armor, 
+           sizeof(player.armor)
+       );
+       m_access_manager->add_scatter_read(
+           m_scatter_handle, 
+           player.collision + cs2_dumper::schemas::client_dll::CCollisionProperty::m_vecMins, 
+           &player.bounds, 
+           sizeof(player.bounds)
+       );
+       m_access_manager->add_scatter_read(
+           m_scatter_handle, 
+           player.ptr + cs2_dumper::schemas::client_dll::CCSPlayerController::m_bPawnHasHelmet, 
+           &player.has_helmet, 
+           sizeof(player.has_helmet)
+       );
+       m_access_manager->add_scatter_read(
+           m_scatter_handle, 
+           player.ptr + cs2_dumper::schemas::client_dll::CCSPlayerController::m_bPawnHasDefuser, 
+           &player.has_defuser, 
+           sizeof(player.has_defuser)
+       );
+       m_access_manager->add_scatter_read(
+           m_scatter_handle, 
+           player.base_entity + cs2_dumper::schemas::client_dll::C_BaseEntity::m_iTeamNum, 
+           &player.team, 
+           sizeof(player.team)
+       );
+       m_access_manager->add_scatter_read(
+           m_scatter_handle, 
+           player.bone_array, 
+           player.bones, 
+           std::min<size_t>(sizeof(player.bones), static_cast<size_t>(Player::MAX_BONES * sizeof(PlayerBone)))
+       );
 
-            if (player.bone_array != 0) {
-                m_access_manager->add_scatter_read(
-                    m_scatter_handle, 
-                    player.bone_array, 
-                    player.bones, 
-                    std::min<size_t>(sizeof(player.bones), static_cast<size_t>(Player::MAX_BONES * sizeof(PlayerBone)))
-                );
-            }
-
-            if (player.base_entity == m_local_player_ptr) {
-                m_local_player = &player;
-            }
-        }
+       if (player.base_entity == m_local_player_ptr) {
+           m_local_player = &player;
+       }
     }
-
     m_access_manager->scatter_read(m_scatter_handle);
 
     for (auto& player : m_players) {
-        if (player.health <= 0 || player.bone_array == 0) {
-            std::memset(player.bones, 0, sizeof(player.bones));
-        }
-
         player.bounds.to_world(player.origin);
-    }
-
-    if (m_local_player) {
-        for (auto& player : m_players) {
-            if (player.base_entity == m_local_player->base_entity) {
-                player.is_visible = true;
-                continue;
-            }
-
-            if (player.health <= 0 || player.team == m_local_player->team) {
-                player.is_visible = true;
-                continue;
-            }
-
-            player.is_visible = false;
-        }
     }
 
     if (m_c4) {

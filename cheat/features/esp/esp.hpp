@@ -31,5 +31,15 @@ private:
     EspSettings m_settings;
     
     void RenderPlayers();
+    void RenderWorldEntities();
+    void RenderMapTriangles();
+    
+    // Helper functions for entity classification
+    bool IsWeaponEntity(uint32_t classname_hash) const;
+    bool IsGrenadeEntity(uint32_t classname_hash) const;
+    bool IsHostageEntity(uint32_t classname_hash) const;
+    bool IsChickenEntity(uint32_t classname_hash) const;
+    ImColor GetEntityColor(uint32_t classname_hash) const;
+    std::string GetEntityDisplayName(uint32_t classname_hash) const;
 };
 
