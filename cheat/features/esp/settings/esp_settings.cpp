@@ -31,10 +31,17 @@ void EspSettings::render_imgui() {
                 
                 // Box settings
                 ImGui::Text("Box Type:");
-                const char* box_type_items[] = { "None", "2D", "2D Corner" };
+                const char* box_type_items[] = { "None", "2D", "2D Corner", "2D Filled" };
                 int current_box_type = static_cast<int>(player.box_type);
                 if (ImGui::Combo("##PlayerBoxType", &current_box_type, box_type_items, IM_ARRAYSIZE(box_type_items))) {
                     player.box_type = static_cast<BOX_TYPE>(current_box_type);
+                }
+                
+                if (player.box_type != BOX_TYPE::BOX_NONE) {
+                    ImGui::Checkbox("Box Shadow", &player.box_shadow);
+                    if (player.box_shadow) {
+                        ImGui::SliderFloat("Shadow Offset", &player.box_shadow_offset, 0.5f, 3.0f, "%.1f");
+                    }
                 }
                 
                 ImGui::Separator();
@@ -59,6 +66,12 @@ void EspSettings::render_imgui() {
                 ImGui::ColorEdit4("Invisible Color", (float*)&player.color_invisible);
                 ImGui::ColorEdit4("Name Color", (float*)&player.name_color);
                 ImGui::ColorEdit4("Box Color", (float*)&player.box_color);
+                if (player.box_type == BOX_TYPE::BOX_2D_FILLED) {
+                    ImGui::ColorEdit4("Box Fill Color", (float*)&player.box_fill_color);
+                }
+                if (player.box_shadow && player.box_type != BOX_TYPE::BOX_NONE) {
+                    ImGui::ColorEdit4("Box Shadow Color", (float*)&player.box_shadow_color);
+                }
             }
             
             ImGui::EndTabItem();
@@ -94,10 +107,17 @@ void EspSettings::render_imgui() {
                 ImGui::SliderFloat("Max Distance", &entities.max_distance, 10.0f, 500.0f, "%.0fm");
                 
                 ImGui::Text("Box Type:");
-                const char* entity_box_type_items[] = { "None", "2D", "2D Corner" };
+                const char* entity_box_type_items[] = { "None", "2D", "2D Corner", "2D Filled" };
                 int current_entity_box_type = static_cast<int>(entities.box_type);
                 if (ImGui::Combo("##EntityBoxType", &current_entity_box_type, entity_box_type_items, IM_ARRAYSIZE(entity_box_type_items))) {
                     entities.box_type = static_cast<BOX_TYPE>(current_entity_box_type);
+                }
+                
+                if (entities.box_type != BOX_TYPE::BOX_NONE) {
+                    ImGui::Checkbox("Box Shadow##Entity", &entities.box_shadow);
+                    if (entities.box_shadow) {
+                        ImGui::SliderFloat("Shadow Offset##Entity", &entities.box_shadow_offset, 0.5f, 3.0f, "%.1f");
+                    }
                 }
                 
                 ImGui::Separator();
@@ -111,6 +131,9 @@ void EspSettings::render_imgui() {
                 ImGui::ColorEdit4("Chicken Color", (float*)&entities.chicken_color);
                 ImGui::ColorEdit4("Other Color", (float*)&entities.other_color);
                 ImGui::ColorEdit4("Name Color", (float*)&entities.name_color);
+                if (entities.box_shadow && entities.box_type != BOX_TYPE::BOX_NONE) {
+                    ImGui::ColorEdit4("Box Shadow Color##Entity", (float*)&entities.box_shadow_color);
+                }
             }
             
             ImGui::EndTabItem();
@@ -164,10 +187,14 @@ void EspSettings::to_json(nlohmann::json& j) const {
     j["player"]["player_info"] = player.player_info;
     j["player"]["visibility_check"] = player.visibility_check;
     j["player"]["max_distance"] = player.max_distance;
+    j["player"]["box_shadow"] = player.box_shadow;
+    j["player"]["box_shadow_offset"] = player.box_shadow_offset;
     j["player"]["color_visible"] = player.color_visible;
     j["player"]["color_invisible"] = player.color_invisible;
     j["player"]["name_color"] = player.name_color;
     j["player"]["box_color"] = player.box_color;
+    j["player"]["box_fill_color"] = player.box_fill_color;
+    j["player"]["box_shadow_color"] = player.box_shadow_color;
     
     // Entity settings
     j["entities"]["enabled"] = entities.enabled;
@@ -175,6 +202,8 @@ void EspSettings::to_json(nlohmann::json& j) const {
     j["entities"]["entity_info"] = entities.entity_info;
     j["entities"]["max_distance"] = entities.max_distance;
     j["entities"]["box_type"] = static_cast<int>(entities.box_type);
+    j["entities"]["box_shadow"] = entities.box_shadow;
+    j["entities"]["box_shadow_offset"] = entities.box_shadow_offset;
     j["entities"]["weapon_color"] = entities.weapon_color;
     j["entities"]["grenade_color"] = entities.grenade_color;
     j["entities"]["c4_color"] = entities.c4_color;
@@ -182,6 +211,7 @@ void EspSettings::to_json(nlohmann::json& j) const {
     j["entities"]["chicken_color"] = entities.chicken_color;
     j["entities"]["other_color"] = entities.other_color;
     j["entities"]["name_color"] = entities.name_color;
+    j["entities"]["box_shadow_color"] = entities.box_shadow_color;
     
     // Map settings
     j["map"]["enabled"] = map.enabled;
@@ -191,20 +221,6 @@ void EspSettings::to_json(nlohmann::json& j) const {
     j["map"]["wireframe_only"] = map.wireframe_only;
     j["map"]["triangle_color"] = map.triangle_color;
     j["map"]["wireframe_color"] = map.wireframe_color;
-    
-    // Legacy settings for backwards compatibility
-    j["show_boxes"] = show_boxes;
-    j["show_names"] = show_names;
-    j["show_health"] = show_health;
-    j["enemy_only"] = enemy_only;
-    j["box_type"] = static_cast<int>(box_type);
-    j["player_info"] = player_info;
-    j["player_visibility_check"] = player_visibility_check;
-    j["box_color"] = box_color;
-    j["name_color"] = name_color;
-    j["health_color"] = health_color;
-    j["player_color_visible"] = player_color_visible;
-    j["player_color_invisible"] = player_color_invisible;
 }
 
 void EspSettings::from_json(const nlohmann::json& j) {
@@ -219,6 +235,8 @@ void EspSettings::from_json(const nlohmann::json& j) {
         if (p.contains("player_info")) player.player_info = p["player_info"];
         if (p.contains("visibility_check")) player.visibility_check = p["visibility_check"];
         if (p.contains("max_distance")) player.max_distance = p["max_distance"];
+        if (p.contains("box_shadow")) player.box_shadow = p["box_shadow"];
+        if (p.contains("box_shadow_offset")) player.box_shadow_offset = p["box_shadow_offset"];
         if (p.contains("color_visible") && p["color_visible"].is_array() && p["color_visible"].size() == 4) {
             player.color_visible = p["color_visible"];
         }
@@ -231,6 +249,12 @@ void EspSettings::from_json(const nlohmann::json& j) {
         if (p.contains("box_color") && p["box_color"].is_array() && p["box_color"].size() == 4) {
             player.box_color = p["box_color"];
         }
+        if (p.contains("box_fill_color") && p["box_fill_color"].is_array() && p["box_fill_color"].size() == 4) {
+            player.box_fill_color = p["box_fill_color"];
+        }
+        if (p.contains("box_shadow_color") && p["box_shadow_color"].is_array() && p["box_shadow_color"].size() == 4) {
+            player.box_shadow_color = p["box_shadow_color"];
+        }
     }
     
     // Load entity settings
@@ -241,6 +265,8 @@ void EspSettings::from_json(const nlohmann::json& j) {
         if (e.contains("entity_info")) entities.entity_info = e["entity_info"];
         if (e.contains("max_distance")) entities.max_distance = e["max_distance"];
         if (e.contains("box_type")) entities.box_type = static_cast<BOX_TYPE>(e["box_type"]);
+        if (e.contains("box_shadow")) entities.box_shadow = e["box_shadow"];
+        if (e.contains("box_shadow_offset")) entities.box_shadow_offset = e["box_shadow_offset"];
         if (e.contains("weapon_color") && e["weapon_color"].is_array() && e["weapon_color"].size() == 4) {
             entities.weapon_color = e["weapon_color"];
         }
@@ -262,6 +288,9 @@ void EspSettings::from_json(const nlohmann::json& j) {
         if (e.contains("name_color") && e["name_color"].is_array() && e["name_color"].size() == 4) {
             entities.name_color = e["name_color"];
         }
+        if (e.contains("box_shadow_color") && e["box_shadow_color"].is_array() && e["box_shadow_color"].size() == 4) {
+            entities.box_shadow_color = e["box_shadow_color"];
+        }
     }
     
     // Load map settings
@@ -278,30 +307,5 @@ void EspSettings::from_json(const nlohmann::json& j) {
         if (m.contains("wireframe_color") && m["wireframe_color"].is_array() && m["wireframe_color"].size() == 4) {
             map.wireframe_color = m["wireframe_color"];
         }
-    }
-    
-    // Legacy settings for backwards compatibility
-    if (j.contains("show_boxes")) show_boxes = j["show_boxes"];
-    if (j.contains("show_names")) show_names = j["show_names"];
-    if (j.contains("show_health")) show_health = j["show_health"];
-    if (j.contains("enemy_only")) enemy_only = j["enemy_only"];
-    if (j.contains("box_type")) box_type = static_cast<BOX_TYPE>(j["box_type"]);
-    if (j.contains("player_info")) player_info = j["player_info"];
-    if (j.contains("player_visibility_check")) player_visibility_check = j["player_visibility_check"];
-    
-    if (j.contains("box_color") && j["box_color"].is_array() && j["box_color"].size() == 4) {
-        box_color = j["box_color"];
-    }
-    if (j.contains("name_color") && j["name_color"].is_array() && j["name_color"].size() == 4) {
-        name_color = j["name_color"];
-    }
-    if (j.contains("health_color") && j["health_color"].is_array() && j["health_color"].size() == 4) {
-        health_color = j["health_color"];
-    }
-    if (j.contains("player_color_visible") && j["player_color_visible"].is_array() && j["player_color_visible"].size() == 4) {
-        player_color_visible = j["player_color_visible"];
-    }
-    if (j.contains("player_color_invisible") && j["player_color_invisible"].is_array() && j["player_color_invisible"].size() == 4) {
-        player_color_invisible = j["player_color_invisible"];
     }
 } 

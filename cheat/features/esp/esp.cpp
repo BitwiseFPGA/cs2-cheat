@@ -72,15 +72,12 @@ void EspFeature::RenderPlayers() {
 
     Player* local_player = m_entity_cache->get_local_player();
     if (!local_player) {
-        __debugbreak();
         return;
     }
 
-	// Get traceline manager
 	auto traceline_manager = m_engine->get_traceline_manager();
     if (!traceline_manager) {
         logger::error("Traceline manager is not available");
-        __debugbreak();
         return;
 	}
 
@@ -127,24 +124,47 @@ void EspFeature::RenderPlayers() {
         case BOX_TYPE::BOX_NONE:
             break;
         case BOX_TYPE::BOX_2D:
-            DrawRect(
-                Vector2(box.Min.x, box.Min.y),
-                Vector2(box.Max.x, box.Max.y),
-                player_color,
-                1.f
-            );
-            break;
-        case BOX_TYPE::BOX_2D_CORNER:
-            DrawRect(
+            DrawRectWithOptions(
                 Vector2(box.Min.x, box.Min.y),
                 Vector2(box.Max.x, box.Max.y),
                 player_color,
                 1.f,
-                true,
+                false, // corners_only
+                Vector2(0, 0), // corner_size
+                m_settings.player.box_shadow, // draw_shadow
+                m_settings.player.box_shadow_offset, // shadow_offset
+                m_settings.player.box_shadow_color // shadow_color
+            );
+            break;
+        case BOX_TYPE::BOX_2D_CORNER:
+            DrawRectWithOptions(
+                Vector2(box.Min.x, box.Min.y),
+                Vector2(box.Max.x, box.Max.y),
+                player_color,
+                1.f,
+                true, // corners_only
                 Vector2(
                     (box.Max.x - box.Min.x) * 0.2f,
                     (box.Max.y - box.Min.y) * 0.2f
-                )
+                ), // corner_size
+                m_settings.player.box_shadow, // draw_shadow
+                m_settings.player.box_shadow_offset, // shadow_offset
+                m_settings.player.box_shadow_color // shadow_color
+            );
+            break;
+        case BOX_TYPE::BOX_2D_FILLED:
+            DrawRectWithOptions(
+                Vector2(box.Min.x, box.Min.y),
+                Vector2(box.Max.x, box.Max.y),
+                player_color,
+                1.f,
+                false, // corners_only
+                Vector2(0, 0), // corner_size
+                m_settings.player.box_shadow, // draw_shadow
+                m_settings.player.box_shadow_offset, // shadow_offset
+                m_settings.player.box_shadow_color, // shadow_color
+                true, // filled
+                m_settings.player.box_fill_color // fill_color
             );
             break;
         default:
@@ -331,8 +351,11 @@ void EspFeature::RenderWorldEntities() {
         }
 
         // Skip player entities
-        if (entity.classname.find("Player") != std::string::npos || 
-            entity.classname.find("Controller") != std::string::npos) {
+        if (entity.classname_hash == fnv1a_32("CCSPlayerController") || 
+            entity.classname_hash == fnv1a_32("C_CSPlayerPawn") ||
+            entity.classname_hash == fnv1a_32("C_CSPlayerPawnBase") ||
+            entity.classname_hash == fnv1a_32("C_BasePlayerController") ||
+            entity.classname_hash == fnv1a_32("C_BasePlayerPawn")) {
             continue;
         }
 
@@ -387,24 +410,47 @@ void EspFeature::RenderWorldEntities() {
             if (box.Min.x != 0 || box.Min.y != 0 || box.Max.x != 0 || box.Max.y != 0) {
                 switch (m_settings.entities.box_type) {
                 case BOX_TYPE::BOX_2D:
-                    DrawRect(
-                        Vector2(box.Min.x, box.Min.y),
-                        Vector2(box.Max.x, box.Max.y),
-                        entity_color,
-                        1.f
-                    );
-                    break;
-                case BOX_TYPE::BOX_2D_CORNER:
-                    DrawRect(
+                    DrawRectWithOptions(
                         Vector2(box.Min.x, box.Min.y),
                         Vector2(box.Max.x, box.Max.y),
                         entity_color,
                         1.f,
-                        true,
+                        false, // corners_only
+                        Vector2(0, 0), // corner_size
+                        m_settings.entities.box_shadow, // draw_shadow
+                        m_settings.entities.box_shadow_offset, // shadow_offset
+                        m_settings.entities.box_shadow_color // shadow_color
+                    );
+                    break;
+                case BOX_TYPE::BOX_2D_CORNER:
+                    DrawRectWithOptions(
+                        Vector2(box.Min.x, box.Min.y),
+                        Vector2(box.Max.x, box.Max.y),
+                        entity_color,
+                        1.f,
+                        true, // corners_only
                         Vector2(
                             (box.Max.x - box.Min.x) * 0.2f,
                             (box.Max.y - box.Min.y) * 0.2f
-                        )
+                        ), // corner_size
+                        m_settings.entities.box_shadow, // draw_shadow
+                        m_settings.entities.box_shadow_offset, // shadow_offset
+                        m_settings.entities.box_shadow_color // shadow_color
+                    );
+                    break;
+                case BOX_TYPE::BOX_2D_FILLED:
+                    DrawRectWithOptions(
+                        Vector2(box.Min.x, box.Min.y),
+                        Vector2(box.Max.x, box.Max.y),
+                        entity_color,
+                        1.f,
+                        false, // corners_only
+                        Vector2(0, 0), // corner_size
+                        m_settings.entities.box_shadow, // draw_shadow
+                        m_settings.entities.box_shadow_offset, // shadow_offset
+                        m_settings.entities.box_shadow_color, // shadow_color
+                        true, // filled
+                        ImColor(entity_color.Value.x, entity_color.Value.y, entity_color.Value.z, 0.3f) // fill_color (use entity color with transparency)
                     );
                     break;
                 default:

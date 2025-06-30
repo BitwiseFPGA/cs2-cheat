@@ -55,11 +55,15 @@ public:
         int player_info = PLAYER_INFO_NAME | PLAYER_INFO_WEAPON | PLAYER_INFO_HEALTHBAR | PLAYER_INFO_SKELETON;
         bool visibility_check = true;
         float max_distance = 500.0f;
+        bool box_shadow = true;
+        float box_shadow_offset = 1.0f;
         
         ImColor color_visible = ImColor(0.0f, 1.0f, 0.0f, 1.0f);
         ImColor color_invisible = ImColor(1.0f, 0.0f, 0.0f, 1.0f);
         ImColor name_color = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
         ImColor box_color = ImColor(1.0f, 0.0f, 0.0f, 1.0f);
+        ImColor box_fill_color = ImColor(1.0f, 0.0f, 0.0f, 0.2f);
+        ImColor box_shadow_color = ImColor(0.0f, 0.0f, 0.0f, 0.8f);
     } player;
     
     // World Entity ESP Settings
@@ -69,6 +73,8 @@ public:
         int entity_info = ENTITY_INFO_NAME | ENTITY_INFO_BOX;
         float max_distance = 200.0f;
         BOX_TYPE box_type = BOX_TYPE::BOX_2D;
+        bool box_shadow = true;
+        float box_shadow_offset = 1.0f;
         
         ImColor weapon_color = ImColor(1.0f, 1.0f, 0.0f, 1.0f);
         ImColor grenade_color = ImColor(1.0f, 0.5f, 0.0f, 1.0f);
@@ -77,6 +83,7 @@ public:
         ImColor chicken_color = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
         ImColor other_color = ImColor(0.5f, 0.5f, 0.5f, 1.0f);
         ImColor name_color = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
+        ImColor box_shadow_color = ImColor(0.0f, 0.0f, 0.0f, 0.8f);
     } entities;
     
     // Map ESP Settings
@@ -90,18 +97,4 @@ public:
         ImColor triangle_color = ImColor(0.0f, 1.0f, 1.0f, 0.1f);
         ImColor wireframe_color = ImColor(0.0f, 1.0f, 1.0f, 0.5f);
     } map;
-    
-    // Legacy support - will be removed
-    bool show_boxes = true;
-    bool show_names = true;
-    bool show_health = true;
-    bool enemy_only = true;
-    BOX_TYPE box_type = BOX_TYPE::BOX_2D;
-    int player_info = PLAYER_INFO_NAME | PLAYER_INFO_WEAPON | PLAYER_INFO_HEALTHBAR | PLAYER_INFO_SKELETON;
-    bool player_visibility_check = true;
-    ImColor box_color = ImColor(1.0f, 0.0f, 0.0f, 1.0f);
-    ImColor name_color = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
-    ImColor health_color = ImColor(0.0f, 1.0f, 0.0f, 1.0f);
-    ImColor player_color_visible = ImColor(0.0f, 1.0f, 0.0f, 1.0f);
-    ImColor player_color_invisible = ImColor(1.0f, 0.0f, 0.0f, 1.0f);
 }; 

@@ -136,4 +136,85 @@ inline void DrawRect(const Vector2& min, const Vector2& max, const ImColor& colo
 
 inline void DrawFilledRect(const Vector2& min, const Vector2& max, const ImColor& color) {
     Drawing::GetDrawList()->AddRectFilled(ImVec2(min.x, min.y), ImVec2(max.x, max.y), color);
+}
+
+// Enhanced DrawRect with shadow and fill support
+inline void DrawRectWithOptions(
+    const Vector2& min, 
+    const Vector2& max, 
+    const ImColor& color, 
+    float thickness, 
+    bool corners_only = false, 
+    const Vector2& corner_size = Vector2(0, 0),
+    bool draw_shadow = false,
+    float shadow_offset = 1.0f,
+    const ImColor& shadow_color = ImColor(0, 0, 0, 100),
+    bool filled = false,
+    const ImColor& fill_color = ImColor(255, 255, 255, 50)
+) {
+    // Draw shadow first (behind everything)
+    if (draw_shadow) {
+        Vector2 shadow_min = Vector2(min.x + shadow_offset, min.y + shadow_offset);
+        Vector2 shadow_max = Vector2(max.x + shadow_offset, max.y + shadow_offset);
+        
+        if (filled) {
+            Drawing::GetDrawList()->AddRectFilled(
+                ImVec2(shadow_min.x, shadow_min.y), 
+                ImVec2(shadow_max.x, shadow_max.y), 
+                shadow_color
+            );
+        } else if (corners_only && corner_size.x > 0 && corner_size.y > 0) {
+            // Draw corner shadow lines
+            float corner_w = corner_size.x;
+            float corner_h = corner_size.y;
+            
+            // Top-left corner shadow
+            Drawing::GetDrawList()->AddLine(ImVec2(shadow_min.x, shadow_min.y), ImVec2(shadow_min.x + corner_w, shadow_min.y), shadow_color, thickness);
+            Drawing::GetDrawList()->AddLine(ImVec2(shadow_min.x, shadow_min.y), ImVec2(shadow_min.x, shadow_min.y + corner_h), shadow_color, thickness);
+            
+            // Top-right corner shadow
+            Drawing::GetDrawList()->AddLine(ImVec2(shadow_max.x - corner_w, shadow_min.y), ImVec2(shadow_max.x, shadow_min.y), shadow_color, thickness);
+            Drawing::GetDrawList()->AddLine(ImVec2(shadow_max.x, shadow_min.y), ImVec2(shadow_max.x, shadow_min.y + corner_h), shadow_color, thickness);
+            
+            // Bottom-left corner shadow
+            Drawing::GetDrawList()->AddLine(ImVec2(shadow_min.x, shadow_max.y - corner_h), ImVec2(shadow_min.x, shadow_max.y), shadow_color, thickness);
+            Drawing::GetDrawList()->AddLine(ImVec2(shadow_min.x, shadow_max.y), ImVec2(shadow_min.x + corner_w, shadow_max.y), shadow_color, thickness);
+            
+            // Bottom-right corner shadow
+            Drawing::GetDrawList()->AddLine(ImVec2(shadow_max.x, shadow_max.y - corner_h), ImVec2(shadow_max.x, shadow_max.y), shadow_color, thickness);
+            Drawing::GetDrawList()->AddLine(ImVec2(shadow_max.x - corner_w, shadow_max.y), ImVec2(shadow_max.x, shadow_max.y), shadow_color, thickness);
+        } else {
+            Drawing::GetDrawList()->AddRect(ImVec2(shadow_min.x, shadow_min.y), ImVec2(shadow_max.x, shadow_max.y), shadow_color, 0.0f, 0, thickness);
+        }
+    }
+    
+    // Draw filled background
+    if (filled) {
+        Drawing::GetDrawList()->AddRectFilled(ImVec2(min.x, min.y), ImVec2(max.x, max.y), fill_color);
+    }
+    
+    // Draw the main outline
+    if (corners_only && corner_size.x > 0 && corner_size.y > 0) {
+        // Draw corner lines
+        float corner_w = corner_size.x;
+        float corner_h = corner_size.y;
+        
+        // Top-left corner
+        Drawing::GetDrawList()->AddLine(ImVec2(min.x, min.y), ImVec2(min.x + corner_w, min.y), color, thickness);
+        Drawing::GetDrawList()->AddLine(ImVec2(min.x, min.y), ImVec2(min.x, min.y + corner_h), color, thickness);
+        
+        // Top-right corner
+        Drawing::GetDrawList()->AddLine(ImVec2(max.x - corner_w, min.y), ImVec2(max.x, min.y), color, thickness);
+        Drawing::GetDrawList()->AddLine(ImVec2(max.x, min.y), ImVec2(max.x, min.y + corner_h), color, thickness);
+        
+        // Bottom-left corner
+        Drawing::GetDrawList()->AddLine(ImVec2(min.x, max.y - corner_h), ImVec2(min.x, max.y), color, thickness);
+        Drawing::GetDrawList()->AddLine(ImVec2(min.x, max.y), ImVec2(min.x + corner_w, max.y), color, thickness);
+        
+        // Bottom-right corner
+        Drawing::GetDrawList()->AddLine(ImVec2(max.x, max.y - corner_h), ImVec2(max.x, max.y), color, thickness);
+        Drawing::GetDrawList()->AddLine(ImVec2(max.x - corner_w, max.y), ImVec2(max.x, max.y), color, thickness);
+    } else {
+        Drawing::GetDrawList()->AddRect(ImVec2(min.x, min.y), ImVec2(max.x, max.y), color, 0.0f, 0, thickness);
+    }
 } 
