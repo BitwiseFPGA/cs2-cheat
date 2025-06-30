@@ -83,8 +83,6 @@ void EntityCache::update() {
     }
     
     try {
-        logger::debug("Updating entity cache");
-
         fetch_globals();
         fetch_entities();
 		update_frame();
@@ -124,10 +122,6 @@ void EntityCache::fetch_globals() {
     );
 
     m_access_manager->scatter_read(m_scatter_handle);
-
-    logger::log_value("m_local_player_ptr", m_local_player_ptr);
-    logger::log_value("m_entity_list_ptr", m_entity_list_ptr);
-    logger::log_value("m_global_vars_ptr", m_global_vars_ptr);
 }
 
 void EntityCache::fetch_entities() {
@@ -238,10 +232,6 @@ void EntityCache::fetch_entities() {
     if (!m_players_to_update_buffer.empty()) {
         fetch_player_data(m_players_to_update_buffer);
     }
-
-    int players_cached = static_cast<int>(m_new_players_buffer.size()) - static_cast<int>(m_players_to_update_buffer.size());
-    int players_reread = static_cast<int>(m_players_to_update_buffer.size());
-    logger::debug("Player Cache Stats - Cached: " + std::to_string(players_cached) + ", Re-read: " + std::to_string(players_reread));
 
     m_entities = std::move(m_new_entities_buffer);
     m_players = std::move(m_new_players_buffer);

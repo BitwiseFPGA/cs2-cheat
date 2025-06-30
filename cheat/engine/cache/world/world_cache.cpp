@@ -67,7 +67,6 @@ void WorldCache::update() {
     }
     
     try {
-        logger::debug("Updating world cache");
         load_world_triangles();
         
         m_last_update = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -128,7 +127,6 @@ void WorldCache::load_world_triangles() {
         }
 
         if (m_prev_physx_world == physx_world) {
-            logger::debug("PhysX world has not changed, skipping load");
             return;
 		}
 
