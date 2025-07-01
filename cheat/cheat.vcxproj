@@ -85,8 +85,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(ProjectDir)libs\embree\include\;$(ProjectDir);$(ProjectDir)libs\imgui;$(ProjectDir)libs\imgui\backends;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)libs\embree\include\;$(ProjectDir);$(ProjectDir)libs\json\include\;$(ProjectDir)libs\imgui\;$(ProjectDir)libs\imgui\backends;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)libs\embree\lib\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
