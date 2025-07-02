@@ -295,16 +295,22 @@ void AimbotFeature::aim_at_screen_position(const Vector2& target_pos) {
         return;
     }
     
-    // Apply smoothing - lower values = faster, higher values = slower
-    // Smoothing range: 0.1 (instant) to 10.0 (very slow)
+    // Apply exponential smoothing - lower values = faster, higher values = slower
+    // Smoothing range: 0.1 (very fast) to 10.0 (very slow)
     float smoothing_factor = std::max<float>(0.1f, m_settings.smooth);
     
-    // Calculate movement speed: higher smoothing = lower speed
-    float speed_multiplier = 1.0f / smoothing_factor;
+    // Convert smoothing factor to interpolation rate
+    // Higher smoothing = lower interpolation rate = smoother movement
+    float smoothing_rate = 1.0f / (smoothing_factor * 10.0f + 1.0f);
+    smoothing_rate = std::max<float>(0.001f, std::min<float>(1.0f, smoothing_rate));
     
-    // Calculate movement for this frame
-    float move_x = delta_x * speed_multiplier;
-    float move_y = delta_y * speed_multiplier;
+    // Apply distance-based scaling for more natural feel
+    float distance_factor = std::min<float>(1.0f, distance / 100.0f); // Scale based on distance
+    float adaptive_rate = smoothing_rate * (0.3f + 0.7f * distance_factor);
+    
+    // Calculate smooth movement using exponential interpolation
+    float move_x = delta_x * adaptive_rate;
+    float move_y = delta_y * adaptive_rate;
     
     // Ensure we don't overshoot the target
     if (std::abs(move_x) > std::abs(delta_x)) {
@@ -329,6 +335,6 @@ void AimbotFeature::aim_at_screen_position(const Vector2& target_pos) {
     // Move the mouse
     if (mouse_x != 0 || mouse_y != 0) {
         m_input_manager->move_mouse(mouse_x, mouse_y);
-        logger::debug("Aimbot: Moving mouse with smoothing: " + std::to_string(smoothing_factor));
+        logger::debug("Aimbot: Moving mouse smoothly");
     }
 }
