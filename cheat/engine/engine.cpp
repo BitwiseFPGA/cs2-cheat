@@ -412,12 +412,14 @@ void Engine::process_input() {
 
     was_insert_down = is_insert_down;
     
-    for (auto& feature : m_features) {
-        if (feature && feature->is_initialized() && feature->is_feature_enabled()) {
-            try {
-                feature->process_input();
-            } catch (const std::exception& e) {
-                logger::error("Feature input processing failed for " + feature->get_name() + ": " + e.what());
+    if (!settings::g_show_menu) {
+        for (auto& feature : m_features) {
+            if (feature && feature->is_initialized() && feature->is_feature_enabled()) {
+                try {
+                    feature->process_input();
+                } catch (const std::exception& e) {
+                    logger::error("Feature input processing failed for " + feature->get_name() + ": " + e.what());
+                }
             }
         }
     }
