@@ -1,5 +1,6 @@
 #include <engine/engine.hpp>
 #include <access/access.hpp>
+#include <input/input.hpp>
 #include <engine/cache/entity/entity_cache.hpp>
 #include <engine/cache/world/world_cache.hpp>
 #include <engine/physics/traceline.hpp>
@@ -17,6 +18,7 @@ Engine::Engine()
     : m_running(false)
     , m_initialized(false)
     , m_access_manager(nullptr)
+    , m_input_manager(nullptr)
     , m_entity_cache(nullptr)
     , m_world_cache(nullptr)
     , m_renderer(nullptr)
@@ -38,37 +40,43 @@ Engine::~Engine() {
 
 bool Engine::initialize() {    
     try {
-        logger::log_step("1/6", "Setting up access system");
+        logger::log_step("1/7", "Setting up access system");
         if (!initialize_access_system()) {
             logger::log_failure("Access System");
             return false;
         }
 
-        logger::log_step("2/6", "Setting up physics and traceline system");
+        logger::log_step("2/7", "Setting up input system");
+        if (!initialize_input_system()) {
+            logger::log_failure("Input System");
+            return false;
+        }
+
+        logger::log_step("3/7", "Setting up physics and traceline system");
         if (!initialize_physics_system()) {
             logger::log_failure("Physics System");
             return false;
         }
 
-        logger::log_step("3/6", "Setting up entity and world caches");
+        logger::log_step("4/7", "Setting up entity and world caches");
         if (!initialize_cache_system()) {
             logger::log_failure("Cache System");
             return false;
         }
         
-        logger::log_step("4/6", "Setting up DirectX 11 renderer");
+        logger::log_step("5/7", "Setting up DirectX 11 renderer");
         if (!initialize_renderer()) {
             logger::log_failure("Renderer System");
             return false;
         }
 
-        logger::log_step("5/6", "Setting up menu and settings system");
+        logger::log_step("6/7", "Setting up menu and settings system");
         if (!initialize_menu_and_settings()) {
             logger::log_failure("Menu and Settings System");
             return false;
         }
 
-        logger::log_step("6/6", "Loading cheat features");
+        logger::log_step("7/7", "Loading cheat features");
         if (!initialize_features()) {
             logger::log_failure("Feature System");
             return false;
@@ -121,6 +129,10 @@ void Engine::shutdown() {
         m_entity_cache.reset();
     }
     
+    if (m_input_manager) {
+        m_input_manager.reset();
+    }
+    
     if (m_access_manager) {
         m_access_manager.reset();
     }
@@ -159,6 +171,10 @@ void Engine::run() {
             
             render_features();
             
+            if (m_input_manager) {
+                m_input_manager->update();
+            }
+            
             process_input();
             
             if (m_main_menu) {
@@ -191,6 +207,21 @@ bool Engine::initialize_access_system() {
         return true;
     } catch (...) {
         logger::error("Failed to initialize access system");
+        return false;
+    }
+}
+
+bool Engine::initialize_input_system() {    
+    try {
+        m_input_manager = std::make_unique<InputManager>();
+        if (!m_input_manager->initialize()) {
+            logger::error("Failed to initialize InputManager");
+            return false;
+        }
+        
+        return true;
+    } catch (...) {
+        logger::error("Failed to initialize input system");
         return false;
     }
 }
@@ -371,14 +402,10 @@ void Engine::render_features() {
 }
 
 void Engine::process_input() {
-    static bool insert_key_was_pressed = false;
-    bool insert_key_pressed = GetAsyncKeyState(VK_INSERT) & 0x8000;
-    
-    if (insert_key_pressed && !insert_key_was_pressed) {
+    if (m_input_manager && m_input_manager->is_key_pressed(InputKey::Insert)) {
         settings::g_show_menu = !settings::g_show_menu;
         logger::info("Menu toggled: " + std::string(settings::g_show_menu ? "ON" : "OFF"));
     }
-    insert_key_was_pressed = insert_key_pressed;
     
     for (auto& feature : m_features) {
         if (feature && feature->is_initialized() && feature->is_feature_enabled()) {

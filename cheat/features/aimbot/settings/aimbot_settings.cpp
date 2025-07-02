@@ -1,6 +1,9 @@
 #include <features/aimbot/settings/aimbot_settings.hpp>
+#include <input/adapter/base_input.h>
 #include <imgui.h>
 #include <vector>
+#include <unordered_map>
+#include <string>
 
 void AimbotSettings::render_imgui() {
     ImGui::Checkbox("Enable Aimbot", &enabled);
@@ -10,11 +13,38 @@ void AimbotSettings::render_imgui() {
         
         ImGui::Checkbox("Use Aim Key", &aim_key_enabled);
         if (aim_key_enabled) {
-            ImGui::SameLine();
-            if (ImGui::Button("Set Key")) {
-
+            // Create key name mapping
+            static std::unordered_map<InputKey, std::string> key_names = {
+                {InputKey::MouseLeft, "Mouse Left"},
+                {InputKey::MouseRight, "Mouse Right"},
+                {InputKey::MouseMiddle, "Mouse Middle"},
+                {InputKey::MouseX1, "Mouse X1"},
+                {InputKey::MouseX2, "Mouse X2"},
+                {InputKey::Shift, "Shift"},
+                {InputKey::Ctrl, "Ctrl"},
+                {InputKey::Alt, "Alt"},
+                {InputKey::Space, "Space"},
+                {InputKey::F1, "F1"}, {InputKey::F2, "F2"}, {InputKey::F3, "F3"},
+                {InputKey::F4, "F4"}, {InputKey::F5, "F5"}, {InputKey::F6, "F6"}
+            };
+            
+            std::string current_key_name = "Unknown";
+            if (key_names.find(aim_key) != key_names.end()) {
+                current_key_name = key_names[aim_key];
             }
-            ImGui::Text("Current Key: 0x%02X", aim_key);
+            
+            if (ImGui::BeginCombo("Aim Key", current_key_name.c_str())) {
+                for (const auto& [key, name] : key_names) {
+                    bool is_selected = (aim_key == key);
+                    if (ImGui::Selectable(name.c_str(), is_selected)) {
+                        aim_key = key;
+                    }
+                    if (is_selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
         }
         
         ImGui::SliderFloat("FOV", &fov, 10.0f, 180.0f);
@@ -40,7 +70,7 @@ void AimbotSettings::render_imgui() {
 void AimbotSettings::to_json(nlohmann::json& j) const {
     j["enabled"] = enabled;
     j["aim_key_enabled"] = aim_key_enabled;
-    j["aim_key"] = aim_key;
+    j["aim_key"] = static_cast<int>(aim_key);
     j["fov"] = fov;
     j["smooth"] = smooth;
     j["max_distance"] = max_distance;
@@ -56,7 +86,7 @@ void AimbotSettings::to_json(nlohmann::json& j) const {
 void AimbotSettings::from_json(const nlohmann::json& j) {
     if (j.contains("enabled")) enabled = j["enabled"];
     if (j.contains("aim_key_enabled")) aim_key_enabled = j["aim_key_enabled"];
-    if (j.contains("aim_key")) aim_key = j["aim_key"];
+    if (j.contains("aim_key")) aim_key = static_cast<InputKey>(j["aim_key"].get<int>());
     if (j.contains("fov")) fov = j["fov"];
     if (j.contains("smooth")) smooth = j["smooth"];
     if (j.contains("max_distance")) max_distance = j["max_distance"];

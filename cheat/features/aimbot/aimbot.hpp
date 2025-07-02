@@ -3,6 +3,7 @@
 #include <engine/sdk/math/vector.hpp>
 #include <features/base_feature.hpp>
 #include <features/aimbot/settings/aimbot_settings.hpp>
+#include <input/adapter/base_input.h>
 #include <memory>
 #include <vector>
 
@@ -11,6 +12,7 @@ class WorldCache;
 class SettingsManager;
 class Renderer;
 class Engine;
+class InputManager;
 
 class AimbotFeature : public BaseFeature {
 public:

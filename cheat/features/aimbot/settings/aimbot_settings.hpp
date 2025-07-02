@@ -1,5 +1,6 @@
 #pragma once
 #include <features/settings/base_settings.hpp>
+#include <input/adapter/base_input.h>
 #include <imgui.h>
 
 class AimbotSettings : public BaseSettings {
@@ -12,7 +13,7 @@ public:
     
     bool enabled = false;
     bool aim_key_enabled = true;
-    int aim_key = 0x01;
+    InputKey aim_key = InputKey::MouseLeft;
     float fov = 90.0f;
     float smooth = 1.0f;
     float max_distance = 300.0f;

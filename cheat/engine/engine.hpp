@@ -8,6 +8,7 @@
 #include <chrono>
 
 class AccessManager;
+class InputManager;
 class EntityCache;
 class WorldCache;
 class Renderer;
@@ -28,6 +29,7 @@ public:
     void stop() { m_running = false; }
     
     AccessManager* get_access_manager() const { return m_access_manager.get(); }
+    InputManager* get_input_manager() const { return m_input_manager.get(); }
     EntityCache* get_entity_cache() const { return m_entity_cache.get(); }
     WorldCache* get_world_cache() const { return m_world_cache.get(); }
     Renderer* get_renderer() const { return m_renderer.get(); }
@@ -72,6 +74,7 @@ private:
     bool m_initialized;
     
     std::unique_ptr<AccessManager> m_access_manager;
+    std::unique_ptr<InputManager> m_input_manager;
     std::unique_ptr<EntityCache> m_entity_cache;
     std::unique_ptr<WorldCache> m_world_cache;
     std::unique_ptr<Renderer> m_renderer;
@@ -95,6 +98,7 @@ private:
     bool should_update_system(std::chrono::high_resolution_clock::time_point& last_update, double interval_ms);
     
     bool initialize_access_system();
+    bool initialize_input_system();
     bool initialize_cache_system();
     bool initialize_physics_system();
     bool initialize_renderer();

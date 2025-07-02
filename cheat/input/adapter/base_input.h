@@ -20,6 +20,7 @@ enum class InputKey : uint16_t {
     Alt = VK_MENU,
     Escape = VK_ESCAPE,
     Space = VK_SPACE,
+    Insert = VK_INSERT,
     
     Left = VK_LEFT,
     Up = VK_UP,
