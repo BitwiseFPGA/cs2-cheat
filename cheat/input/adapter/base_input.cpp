@@ -10,9 +10,7 @@ BaseInputAdapter::BaseInputAdapter()
 }
 
 BaseInputAdapter::~BaseInputAdapter() {
-    if (m_initialized) {
-        shutdown();
-    }
+    
 }
 
 void BaseInputAdapter::update_key_states() {

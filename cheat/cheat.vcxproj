@@ -204,6 +204,7 @@
     <ClCompile Include="engine\cache\entity\entity_cache.cpp" />
     <ClCompile Include="engine\cache\world\world_cache.cpp" />
     <ClCompile Include="engine\physics\traceline.cpp" />
+    <ClCompile Include="input\adapter\remote\kmbox.cpp" />
     <ClCompile Include="input\input.cpp" />
     <ClCompile Include="renderer\adapters\d3d11.cpp" />
     <ClCompile Include="features\aimbot\settings\aimbot_settings.cpp" />

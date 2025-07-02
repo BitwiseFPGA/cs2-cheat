@@ -1,6 +1,7 @@
 #include "winapi_input.h"
 #include <thread>
 #include <chrono>
+#include <logger/logger.hpp>
 
 WinApiInput::WinApiInput() : BaseInputAdapter() {
 }
@@ -255,11 +256,17 @@ void WinApiInput::update() {
     // Update key states
     for (int i = 0; i < 256; ++i) {
         m_current_key_states[i] = is_key_down(static_cast<InputKey>(i));
+        if (m_current_key_states[i]) {
+            logger::debug("Key down: " + std::to_string(i));
+        }
     }
     
     // Update mouse states
     for (int i = 0; i < 5; ++i) {
         m_current_mouse_states[i] = is_mouse_button_down(static_cast<MouseButton>(i));
+        if (m_current_mouse_states[i]) {
+            logger::debug("Mouse button down: " + std::to_string(i));
+        }
     }
 }
 

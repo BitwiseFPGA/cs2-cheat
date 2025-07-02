@@ -402,10 +402,15 @@ void Engine::render_features() {
 }
 
 void Engine::process_input() {
-    if (m_input_manager && m_input_manager->is_key_pressed(InputKey::Insert)) {
+    static bool was_insert_down = false;
+    bool is_insert_down = m_input_manager && m_input_manager->is_key_down(InputKey::Insert);
+
+    if (is_insert_down && !was_insert_down) {
         settings::g_show_menu = !settings::g_show_menu;
         logger::info("Menu toggled: " + std::string(settings::g_show_menu ? "ON" : "OFF"));
     }
+
+    was_insert_down = is_insert_down;
     
     for (auto& feature : m_features) {
         if (feature && feature->is_initialized() && feature->is_feature_enabled()) {

@@ -534,17 +534,14 @@ void EntityCache::update_frame() {
     }
 
     if (m_c4) {
-        logger::info("C4 was found");
         for (auto& player : m_players) {
             if ((m_c4->owner_ptr & 0x7FFF) == (player.pawn & 0x7FFF)) {
                 player.has_c4 = true;
-                logger::info("A player has the c4");
             } else {
                 player.has_c4 = false;
             }
         }
     } else {
-        logger::info("C4 wasnt found");
         for (auto& player : m_players) {
             player.has_c4 = false;
         }
