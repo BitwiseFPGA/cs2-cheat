@@ -3,7 +3,7 @@
 #include <engine/sdk/types/entity_impl.hpp>
 #include <engine/sdk/types/player_impl.hpp>
 #include <engine/sdk/math/matrix.hpp>
-#include <access/adapter/base_adapter.hpp>
+#include <access/adapter/base_access.hpp>
 #include <vector>
 #include <memory>
 #include <unordered_map>

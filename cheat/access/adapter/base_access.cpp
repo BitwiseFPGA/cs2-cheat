@@ -1,4 +1,4 @@
-#include <access/adapter/base_adapter.hpp>
+#include <access/adapter/base_access.hpp>
 
 BaseMemoryAdapter::BaseMemoryAdapter()
     : m_attached(false)

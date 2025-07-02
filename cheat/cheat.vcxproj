@@ -156,13 +156,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="access\adapter\base_adapter.hpp" />
+    <ClInclude Include="access\adapter\base_access.hpp" />
+    <ClInclude Include="input\adapter\base_input.h" />
     <ClInclude Include="config\build\settings.hpp" />
     <ClInclude Include="config\runtime\settings.hpp" />
     <ClInclude Include="engine\engine.hpp" />
     <ClInclude Include="engine\cache\entity\entity_cache.hpp" />
     <ClInclude Include="engine\sdk\offsets\methods\extractor.hpp" />
     <ClInclude Include="engine\physics\traceline.hpp" />
+    <ClInclude Include="input\adapter\remote\kmbox.hpp" />
+    <ClInclude Include="input\input.hpp" />
     <ClInclude Include="renderer\adapters\d3d11.hpp" />
     <ClInclude Include="renderer\renderer.hpp" />
     <ClInclude Include="engine\sdk\math\matrix.hpp" />
@@ -184,7 +187,7 @@
     <ClInclude Include="features\settings\base_settings.hpp" />
     <ClInclude Include="logger\logger.hpp" />
     <ClInclude Include="access\access.hpp" />
-    <ClInclude Include="access\adapter\local\winapi.hpp" />
+    <ClInclude Include="access\adapter\local\winapi_access.hpp" />
     <ClInclude Include="access\adapter\remote\dma.hpp" />
     <ClInclude Include="libs\imgui\imgui.h" />
     <ClInclude Include="libs\imgui\imgui_internal.h" />
@@ -192,13 +195,16 @@
     <ClInclude Include="libs\imgui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="libs\imgui\backends\imgui_impl_win32.h" />
     <ClInclude Include="menu\main_menu.hpp" />
+    <ClInclude Include="input\adapter\local\winapi_input.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="access\adapter\base_adapter.cpp" />
+    <ClCompile Include="access\adapter\base_access.cpp" />
+    <ClCompile Include="input\adapter\base_input.cpp" />
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\cache\entity\entity_cache.cpp" />
     <ClCompile Include="engine\cache\world\world_cache.cpp" />
     <ClCompile Include="engine\physics\traceline.cpp" />
+    <ClCompile Include="input\input.cpp" />
     <ClCompile Include="renderer\adapters\d3d11.cpp" />
     <ClCompile Include="features\aimbot\settings\aimbot_settings.cpp" />
     <ClCompile Include="features\aimbot\aimbot.cpp" />
@@ -208,7 +214,7 @@
     <ClCompile Include="logger\logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="access\access.cpp" />
-    <ClCompile Include="access\adapter\local\winapi.cpp" />
+    <ClCompile Include="access\adapter\local\winapi_access.cpp" />
     <ClCompile Include="libs\imgui\imgui.cpp" />
     <ClCompile Include="libs\imgui\imgui_demo.cpp" />
     <ClCompile Include="libs\imgui\imgui_draw.cpp" />
@@ -217,6 +223,7 @@
     <ClCompile Include="libs\imgui\backends\imgui_impl_dx11.cpp" />
     <ClCompile Include="libs\imgui\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="menu\main_menu.cpp" />
+    <ClCompile Include="input\adapter\local\winapi_input.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

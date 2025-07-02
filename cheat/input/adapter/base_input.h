@@ -1,5 +1,5 @@
 #pragma once
-class input
+class base_input
 {
 };
 

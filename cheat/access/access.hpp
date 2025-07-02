@@ -1,6 +1,6 @@
 #pragma once
 #include <logger/logger.hpp>
-#include <access/adapter/base_adapter.hpp>
+#include <access/adapter/base_access.hpp>
 #include <string>
 #include <memory>
 #include <cstdint>
