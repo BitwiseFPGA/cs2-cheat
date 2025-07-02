@@ -84,7 +84,7 @@ void AimbotSettings::render_imgui() {
         
         // Smoothing
         ImGui::Text("Smoothing:");
-        ImGui::SliderFloat("Smooth", &smooth, 0.1f, 10.0f, "%.1f");
+        ImGui::SliderFloat("Smooth", &smooth, 1.0f, 10.0f, "%.1f");
         //ImGui::Checkbox("Recoil Control System", &rcs_enabled);
         //if (rcs_enabled) {
         //    ImGui::SliderFloat("RCS Scale", &rcs_scale, 0.1f, 5.0f, "%.1f");
