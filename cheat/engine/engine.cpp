@@ -160,7 +160,7 @@ void Engine::run() {
             m_renderer->draw_text(
                 Vector2(10, 10),
                 "FPS: " + std::to_string(m_renderer->get_framerate()),
-                ImColor(255, 255, 255, 255)
+                ImColor(255, 0, 0, 255)
             );
 
             update_caches();
