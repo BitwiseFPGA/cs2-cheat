@@ -40,6 +40,10 @@ private:
     bool m_has_target;
     float m_current_target_distance;
     
+    // Movement accumulation for precise smoothing
+    float m_movement_remainder_x;
+    float m_movement_remainder_y;
+    
     // Helper methods
     bool should_aim() const;
     void aim_at_screen_position(const Vector2& target_pos);

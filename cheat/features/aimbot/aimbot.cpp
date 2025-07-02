@@ -17,6 +17,8 @@ AimbotFeature::AimbotFeature(EntityCache* entity_cache, WorldCache* world_cache,
     , m_target_position(0, 0)
     , m_has_target(false)
     , m_current_target_distance(0.0f)
+    , m_movement_remainder_x(0.0f)
+    , m_movement_remainder_y(0.0f)
 {
     logger::debug("Aimbot Feature created");
 }
@@ -263,6 +265,10 @@ void AimbotFeature::process_input() {
     // Check if we should aim and have a target
     if (should_aim() && m_has_target) {
         aim_at_screen_position(m_target_position);
+    } else {
+        // Reset movement remainder when not aiming
+        m_movement_remainder_x = 0.0f;
+        m_movement_remainder_y = 0.0f;
     }
 }
 
@@ -277,35 +283,52 @@ bool AimbotFeature::should_aim() const {
 void AimbotFeature::aim_at_screen_position(const Vector2& target_pos) {
     Vector2 screen_center = m_renderer->get_screen_center();
     
-    float target_x = 0;
-    float target_y = 0;
+    // Calculate the delta (distance to target)
+    float delta_x = target_pos.x - screen_center.x;
+    float delta_y = target_pos.y - screen_center.y;
     
-    // Calculate X movement
-    if (target_pos.x > screen_center.x) {
-        target_x = -(screen_center.x - target_pos.x);
-        if (target_x + screen_center.x > screen_center.x * 2) target_x = 0;
-    } else {
-        target_x = target_pos.x - screen_center.x;
-        if (target_x + screen_center.x < 0) target_x = 0;
+    // Calculate distance to target
+    float distance = std::sqrt(delta_x * delta_x + delta_y * delta_y);
+    
+    // Skip if already very close to target
+    if (distance < 1.0f) {
+        return;
     }
     
-    // Calculate Y movement
-    if (target_pos.y > screen_center.y) {
-        target_y = -(screen_center.y - target_pos.y);
-        if (target_y + screen_center.y > screen_center.y * 2) target_y = 0;
-    } else {
-        target_y = target_pos.y - screen_center.y;
-        if (target_y + screen_center.y < 0) target_y = 0;
+    // Apply smoothing - lower values = faster, higher values = slower
+    // Smoothing range: 0.1 (instant) to 10.0 (very slow)
+    float smoothing_factor = std::max<float>(0.1f, m_settings.smooth);
+    
+    // Calculate movement speed: higher smoothing = lower speed
+    float speed_multiplier = 1.0f / smoothing_factor;
+    
+    // Calculate movement for this frame
+    float move_x = delta_x * speed_multiplier;
+    float move_y = delta_y * speed_multiplier;
+    
+    // Ensure we don't overshoot the target
+    if (std::abs(move_x) > std::abs(delta_x)) {
+        move_x = delta_x;
+    }
+    if (std::abs(move_y) > std::abs(delta_y)) {
+        move_y = delta_y;
     }
     
-    // Apply smoothing
-    float smoothing_factor = m_settings.smooth + 5.0f;
-    target_x /= smoothing_factor;
-    target_y /= smoothing_factor;
+    // Add accumulated remainder from previous frames
+    move_x += m_movement_remainder_x;
+    move_y += m_movement_remainder_y;
+    
+    // Convert to integer mouse movement
+    int mouse_x = static_cast<int>(move_x);
+    int mouse_y = static_cast<int>(move_y);
+    
+    // Store the remainder for next frame
+    m_movement_remainder_x = move_x - static_cast<float>(mouse_x);
+    m_movement_remainder_y = move_y - static_cast<float>(mouse_y);
     
     // Move the mouse
-    if (target_x != 0 || target_y != 0) {
-        m_input_manager->move_mouse(static_cast<int>(target_x), static_cast<int>(target_y));
-        logger::debug("Aimbot: Moving mouse (" + std::to_string(target_x) + ", " + std::to_string(target_y) + ") smooth: " + std::to_string(smoothing_factor));
+    if (mouse_x != 0 || mouse_y != 0) {
+        m_input_manager->move_mouse(mouse_x, mouse_y);
+        logger::debug("Aimbot: Moving mouse with smoothing: " + std::to_string(smoothing_factor));
     }
 }

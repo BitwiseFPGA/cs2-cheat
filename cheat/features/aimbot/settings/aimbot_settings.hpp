@@ -20,9 +20,9 @@ public:
     void from_json(const nlohmann::json& j) override;
     
     // Main settings
-    bool enabled = false;
+    bool enabled = true;
     bool aim_key_enabled = true;
-    InputKey aim_key = InputKey::MouseLeft;
+    InputKey aim_key = InputKey::Alt;
     
     // Target selection
     AimbotBone target_bone = AimbotBone::HEAD;
