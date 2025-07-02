@@ -1,7 +1,7 @@
 #include <access/access.hpp>
 #include <config/build/settings.hpp>
 #include <logger/logger.hpp>
-#include <access/adapter/local/winapi.hpp>
+#include <access/adapter/local/winapi_access.hpp>
 #include <access/adapter/remote/dma.hpp>
 
 AccessManager::AccessManager()
