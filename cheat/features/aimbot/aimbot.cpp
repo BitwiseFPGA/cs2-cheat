@@ -70,7 +70,6 @@ std::vector<Vector3> AimbotFeature::get_target_bones(const Player& player) const
     std::vector<Vector3> target_bones;
     
     if (m_settings.multi_bone_enabled) {
-        // Multi-bone targeting
         if (m_settings.target_head) {
             Vector3 bone_pos = get_bone_position(player, AimbotBone::HEAD);
             if (bone_pos != Vector3(0, 0, 0)) {
@@ -102,7 +101,6 @@ std::vector<Vector3> AimbotFeature::get_target_bones(const Player& player) const
             }
         }
     } else {
-        // Single bone targeting
         Vector3 bone_pos = get_bone_position(player, m_settings.target_bone);
         if (bone_pos != Vector3(0, 0, 0)) {
             target_bones.push_back(bone_pos);
@@ -114,12 +112,12 @@ std::vector<Vector3> AimbotFeature::get_target_bones(const Player& player) const
 
 bool AimbotFeature::is_target_visible(const Vector3& local_eye_pos, const Vector3& target_pos) const {
     if (!m_settings.visible_only) {
-        return true; // Skip visibility check if disabled
+        return true;
     }
     
     auto traceline_manager = m_engine->get_traceline_manager();
     if (!traceline_manager) {
-        return true; // Assume visible if traceline manager is not available
+        return true;
     }
     
     return traceline_manager->is_visible(local_eye_pos, target_pos);
@@ -130,17 +128,14 @@ void AimbotFeature::update() {
         return;
     }
     
-    // Reset target state
     m_has_target = false;
     m_current_target_distance = 0.0f;
     
-    // Get all players
     auto& players = m_entity_cache->get_players();
     if (players.empty()) {
         return;
     }
     
-    // Get local player for team check and eye position
     Player* local_player = m_entity_cache->get_local_player();
     if (!local_player) {
         return;
@@ -156,58 +151,46 @@ void AimbotFeature::update() {
     Vector2 closest_target;
     bool found_target = false;
     
-    // Loop through all players
     for (const auto& player : players) {
-        // Skip if player is dead or invalid
         if (player.health <= 0 || player.origin == Vector3(0, 0, 0)) {
             continue;
         }
         
-        // Skip local player
         if (player.instance == local_player->instance) {
             continue;
         }
         
-        // Skip teammates if team check is enabled
         if (m_settings.team_check && player.team == local_player->team) {
             continue;
         }
         
-        // Check world distance first
         float world_distance = player.origin.distance_to(local_player->origin) * 0.1f;
         if (world_distance > m_settings.max_distance) {
             continue;
         }
         
-        // Get all possible target bones for this player
         std::vector<Vector3> target_bones = get_target_bones(player);
         if (target_bones.empty()) {
             continue;
         }
         
-        // Find the best bone to target
         for (const Vector3& bone_pos : target_bones) {
-            // Check visibility if required
             if (!is_target_visible(local_eye_pos, bone_pos)) {
                 continue;
             }
             
-            // Convert to screen position
             Vector2 screen_pos;
             if (!m_engine->world_to_screen(bone_pos, screen_pos)) {
                 continue;
             }
             
-            // Calculate distance from screen center
             Vector2 delta = screen_pos - screen_center;
             float screen_distance = std::sqrt(delta.x * delta.x + delta.y * delta.y);
             
-            // Check if within FOV
             if (screen_distance > m_settings.fov) {
                 continue;
             }
             
-            // Check if this is the closest target
             if (screen_distance < closest_distance) {
                 closest_distance = screen_distance;
                 closest_target = screen_pos;
@@ -229,18 +212,14 @@ void AimbotFeature::render() {
         return;
     }
     
-    // Draw FOV circle
     if (m_settings.show_fov_circle) {
         m_renderer->draw_circle(m_renderer->get_screen_center(), m_settings.fov, m_settings.fov_circle_color, 0, 2.0f);
     }
     
-    // Draw target indicator and info
     if (m_has_target) {
-        // Draw target indicator
         m_renderer->draw_circle(m_target_position, 8.0f, ImColor(255, 0, 0, 255), 0, 2.0f);
         m_renderer->draw_circle(m_target_position, 4.0f, ImColor(255, 255, 255, 255), 0, 1.0f);
         
-        // Draw target info
         if (m_settings.show_target_info) {
             std::string target_info = "TARGET";
             if (m_current_target_distance > 0) {
@@ -249,7 +228,6 @@ void AimbotFeature::render() {
             m_renderer->draw_text(m_target_position + Vector2(15, -5), target_info, ImColor(255, 255, 255, 255));
         }
         
-        // Draw aim line when aiming
         if (m_settings.show_aim_line && should_aim()) {
             Vector2 center = m_renderer->get_screen_center();
             m_renderer->draw_line(center, m_target_position, ImColor(0, 255, 0, 180), 1.5f);
@@ -262,11 +240,9 @@ void AimbotFeature::process_input() {
         return;
     }
     
-    // Check if we should aim and have a target
     if (should_aim() && m_has_target) {
         aim_at_screen_position(m_target_position);
     } else {
-        // Reset movement remainder when not aiming
         m_movement_remainder_x = 0.0f;
         m_movement_remainder_y = 0.0f;
     }
@@ -274,7 +250,7 @@ void AimbotFeature::process_input() {
 
 bool AimbotFeature::should_aim() const {
     if (!m_settings.aim_key_enabled) {
-        return true; // Always aim if aim key is disabled
+        return true;
     }
     
     return m_input_manager->is_key_down(m_settings.aim_key);
@@ -283,36 +259,26 @@ bool AimbotFeature::should_aim() const {
 void AimbotFeature::aim_at_screen_position(const Vector2& target_pos) {
     Vector2 screen_center = m_renderer->get_screen_center();
     
-    // Calculate the delta (distance to target)
     float delta_x = target_pos.x - screen_center.x;
     float delta_y = target_pos.y - screen_center.y;
     
-    // Calculate distance to target
     float distance = std::sqrt(delta_x * delta_x + delta_y * delta_y);
     
-    // Skip if already very close to target
     if (distance < 1.0f) {
         return;
     }
     
-    // Apply exponential smoothing - lower values = faster, higher values = slower
-    // Smoothing range: 0.1 (very fast) to 10.0 (very slow)
     float smoothing_factor = std::max<float>(0.1f, m_settings.smooth);
     
-    // Convert smoothing factor to interpolation rate
-    // Higher smoothing = lower interpolation rate = smoother movement
     float smoothing_rate = 1.0f / (smoothing_factor * 10.0f + 1.0f);
     smoothing_rate = std::max<float>(0.001f, std::min<float>(1.0f, smoothing_rate));
     
-    // Apply distance-based scaling for more natural feel
-    float distance_factor = std::min<float>(1.0f, distance / 100.0f); // Scale based on distance
+    float distance_factor = std::min<float>(1.0f, distance / 100.0f);
     float adaptive_rate = smoothing_rate * (0.3f + 0.7f * distance_factor);
     
-    // Calculate smooth movement using exponential interpolation
     float move_x = delta_x * adaptive_rate;
     float move_y = delta_y * adaptive_rate;
     
-    // Ensure we don't overshoot the target
     if (std::abs(move_x) > std::abs(delta_x)) {
         move_x = delta_x;
     }
@@ -320,19 +286,15 @@ void AimbotFeature::aim_at_screen_position(const Vector2& target_pos) {
         move_y = delta_y;
     }
     
-    // Add accumulated remainder from previous frames
     move_x += m_movement_remainder_x;
     move_y += m_movement_remainder_y;
     
-    // Convert to integer mouse movement
     int mouse_x = static_cast<int>(move_x);
     int mouse_y = static_cast<int>(move_y);
     
-    // Store the remainder for next frame
     m_movement_remainder_x = move_x - static_cast<float>(mouse_x);
     m_movement_remainder_y = move_y - static_cast<float>(mouse_y);
     
-    // Move the mouse
     if (mouse_x != 0 || mouse_y != 0) {
         m_input_manager->move_mouse(mouse_x, mouse_y);
         logger::debug("Aimbot: Moving mouse smoothly");
