@@ -203,7 +203,6 @@ void AimbotFeature::update() {
     if (found_target) {
         m_target_position = closest_target;
         m_has_target = true;
-        logger::debug("Aimbot target found at: (" + std::to_string(m_target_position.x) + ", " + std::to_string(m_target_position.y) + ") distance: " + std::to_string(closest_distance) + "px, world: " + std::to_string(m_current_target_distance) + "m");
     }
 }
 

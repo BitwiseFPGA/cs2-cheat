@@ -157,6 +157,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="access\adapter\base_access.hpp" />
+    <ClInclude Include="features\triggerbot\settings\triggerbot_settings.hpp" />
+    <ClInclude Include="features\triggerbot\triggerbot.hpp" />
     <ClInclude Include="input\adapter\base_input.h" />
     <ClInclude Include="config\build\settings.hpp" />
     <ClInclude Include="config\runtime\settings.hpp" />
@@ -199,6 +201,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="access\adapter\base_access.cpp" />
+    <ClCompile Include="features\triggerbot\settings\triggerbot_settings.cpp" />
+    <ClCompile Include="features\triggerbot\triggerbot.cpp" />
     <ClCompile Include="input\adapter\base_input.cpp" />
     <ClCompile Include="engine\engine.cpp" />
     <ClCompile Include="engine\cache\entity\entity_cache.cpp" />

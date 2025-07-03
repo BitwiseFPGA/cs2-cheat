@@ -7,6 +7,7 @@
 #include <renderer/adapters/d3d11.hpp>
 #include <features/aimbot/aimbot.hpp>
 #include <features/esp/esp.hpp>
+#include <features/triggerbot/triggerbot.hpp>
 #include <config/runtime/settings.hpp>
 #include <menu/main_menu.hpp>
 #include <thread>
@@ -294,6 +295,7 @@ bool Engine::initialize_features() {
     try {
         add_feature<AimbotFeature>(m_entity_cache.get(), m_world_cache.get(), m_renderer.get(), this);
         add_feature<EspFeature>(m_entity_cache.get(), m_world_cache.get(), m_renderer.get(), this);
+        add_feature<TriggerbotFeature>(m_entity_cache.get(), m_world_cache.get(), m_renderer.get(), this);
         
         for (auto& feature : m_features) {
             if (feature) {
@@ -310,6 +312,9 @@ bool Engine::initialize_features() {
             }
             else if (auto aimbot_feature = std::dynamic_pointer_cast<AimbotFeature>(feature)) {
                 m_settings_manager->register_settings(&aimbot_feature->get_settings());
+            }
+            else if (auto triggerbot_feature = std::dynamic_pointer_cast<TriggerbotFeature>(feature)) {
+                m_settings_manager->register_settings(&triggerbot_feature->get_settings());
             }
         }
         
