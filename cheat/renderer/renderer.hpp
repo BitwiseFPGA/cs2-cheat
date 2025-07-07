@@ -28,4 +28,5 @@ public:
     virtual Vector2 get_screen_size() const = 0;
     virtual Vector2 get_screen_center() const = 0;
     virtual float get_framerate() const = 0;
+    virtual ImDrawList* get_draw_list() const = 0;
 };

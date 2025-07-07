@@ -72,9 +72,9 @@ void SmokeGrenade::ProcessVoxelData(const std::vector<uint32_t>& voxel_indices, 
         if (densities[i] <= 0.0f) continue;
         
         VoxelData voxel;
-        voxel.worldPos = VoxelIndexToWorldPos(smoke_center, voxel_indices[i]);
+        voxel.world_position = VoxelIndexToWorldPos(smoke_center, voxel_indices[i]);
         voxel.density = densities[i];
-        voxel.hasSmoke = true;
+        voxel.has_smoke = true;
         voxels.push_back(voxel);
     }
 }

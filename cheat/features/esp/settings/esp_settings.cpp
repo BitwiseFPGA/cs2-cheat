@@ -175,11 +175,6 @@ void EspSettings::render_imgui() {
                     ImGui::Text("Colors:");
                     ImGui::ColorEdit4("Triangle Color", (float*)&map.triangle_color);
                     ImGui::ColorEdit4("Wireframe Color", (float*)&map.wireframe_color);
-                    
-                    ImGui::Separator();
-                    
-                    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Warning:");
-                    ImGui::TextWrapped("Map triangle rendering can be performance intensive. Use low max distance and wireframe mode for better performance.");
                 }
             }
             
@@ -189,64 +184,6 @@ void EspSettings::render_imgui() {
         // Smoke ESP Tab
         if (ImGui::BeginTabItem("Smoke")) {
             ImGui::Checkbox("Enable Smoke ESP", &smoke.enabled);
-            
-            if (smoke.enabled) {
-                ImGui::Separator();
-                
-                // Smoke visualization options
-                ImGui::Text("Visualization Options:");
-                ImGui::Checkbox("Show Center Marker", &smoke.show_center_marker);
-                ImGui::Checkbox("Show Voxels", &smoke.show_voxels);
-                
-                if (smoke.show_voxels) {
-                    ImGui::Separator();
-                    
-                    // Voxel rendering settings
-                    ImGui::Text("Voxel Settings:");
-                    ImGui::SliderFloat("Voxel Size", &smoke.voxel_size, 5.0f, 50.0f, "%.1f units");
-                    ImGui::SliderFloat("Min Density Threshold", &smoke.min_density_threshold, 0.1f, 40.f, "%.3f");
-                    ImGui::SliderFloat("Max Opacity", &smoke.max_opacity, 0.1f, 1.0f, "%.2f");
-                    ImGui::SliderFloat("Density Multiplier", &smoke.density_multiplier, 0.1f, 5.0f, "%.2f");
-                    ImGui::SliderFloat("Max Distance", &smoke.max_distance, 50.0f, 1000.0f, "%.0fm");
-                    
-                    ImGui::Separator();
-                    
-                    // Color settings
-                    ImGui::Text("Color Settings:");
-                    ImGui::Checkbox("Use Gradient Colors", &smoke.use_gradient_colors);
-                    
-                    if (smoke.use_gradient_colors) {
-                        ImGui::ColorEdit4("Low Density Color", (float*)&smoke.low_density_color);
-                        ImGui::ColorEdit4("High Density Color", (float*)&smoke.high_density_color);
-                    } else {
-                        ImGui::ColorEdit4("Voxel Color", (float*)&smoke.low_density_color);
-                    }
-                    
-                    ImGui::Separator();
-                    
-                    // Edge settings
-                    ImGui::Text("Edge Settings:");
-                    ImGui::Checkbox("Show Edges", &smoke.show_edges);
-                    if (smoke.show_edges) {
-                        ImGui::SliderFloat("Edge Thickness", &smoke.edge_thickness, 0.5f, 3.0f, "%.1f");
-                        ImGui::ColorEdit4("Edge Color", (float*)&smoke.edge_color);
-                    }
-                }
-                
-                if (smoke.show_center_marker) {
-                    ImGui::Separator();
-                    ImGui::Text("Center Marker:");
-                    ImGui::ColorEdit4("Center Marker Color", (float*)&smoke.center_marker_color);
-                }
-                
-                ImGui::Separator();
-                
-                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Performance Tips:");
-                ImGui::TextWrapped("• Lower voxel count by increasing min density threshold");
-                ImGui::TextWrapped("• Reduce max distance for better performance");
-                ImGui::TextWrapped("• Disable edges for slight performance improvement");
-                ImGui::TextWrapped("• Use smaller voxel size for better detail vs performance");
-            }
             
             ImGui::EndTabItem();
         }
@@ -302,20 +239,6 @@ void EspSettings::to_json(nlohmann::json& j) const {
     
     // Smoke settings
     j["smoke"]["enabled"] = smoke.enabled;
-    j["smoke"]["show_center_marker"] = smoke.show_center_marker;
-    j["smoke"]["show_voxels"] = smoke.show_voxels;
-    j["smoke"]["voxel_size"] = smoke.voxel_size;
-    j["smoke"]["min_density_threshold"] = smoke.min_density_threshold;
-    j["smoke"]["max_opacity"] = smoke.max_opacity;
-    j["smoke"]["density_multiplier"] = smoke.density_multiplier;
-    j["smoke"]["use_gradient_colors"] = smoke.use_gradient_colors;
-    j["smoke"]["show_edges"] = smoke.show_edges;
-    j["smoke"]["edge_thickness"] = smoke.edge_thickness;
-    j["smoke"]["max_distance"] = smoke.max_distance;
-    j["smoke"]["center_marker_color"] = smoke.center_marker_color;
-    j["smoke"]["low_density_color"] = smoke.low_density_color;
-    j["smoke"]["high_density_color"] = smoke.high_density_color;
-    j["smoke"]["edge_color"] = smoke.edge_color;
 }
 
 void EspSettings::from_json(const nlohmann::json& j) {
@@ -408,27 +331,5 @@ void EspSettings::from_json(const nlohmann::json& j) {
     if (j.contains("smoke")) {
         const auto& s = j["smoke"];
         if (s.contains("enabled")) smoke.enabled = s["enabled"];
-        if (s.contains("show_center_marker")) smoke.show_center_marker = s["show_center_marker"];
-        if (s.contains("show_voxels")) smoke.show_voxels = s["show_voxels"];
-        if (s.contains("voxel_size")) smoke.voxel_size = s["voxel_size"];
-        if (s.contains("min_density_threshold")) smoke.min_density_threshold = s["min_density_threshold"];
-        if (s.contains("max_opacity")) smoke.max_opacity = s["max_opacity"];
-        if (s.contains("density_multiplier")) smoke.density_multiplier = s["density_multiplier"];
-        if (s.contains("use_gradient_colors")) smoke.use_gradient_colors = s["use_gradient_colors"];
-        if (s.contains("show_edges")) smoke.show_edges = s["show_edges"];
-        if (s.contains("edge_thickness")) smoke.edge_thickness = s["edge_thickness"];
-        if (s.contains("max_distance")) smoke.max_distance = s["max_distance"];
-        if (s.contains("center_marker_color") && s["center_marker_color"].is_array() && s["center_marker_color"].size() == 4) {
-            smoke.center_marker_color = s["center_marker_color"];
-        }
-        if (s.contains("low_density_color") && s["low_density_color"].is_array() && s["low_density_color"].size() == 4) {
-            smoke.low_density_color = s["low_density_color"];
-        }
-        if (s.contains("high_density_color") && s["high_density_color"].is_array() && s["high_density_color"].size() == 4) {
-            smoke.high_density_color = s["high_density_color"];
-        }
-        if (s.contains("edge_color") && s["edge_color"].is_array() && s["edge_color"].size() == 4) {
-            smoke.edge_color = s["edge_color"];
-        }
     }
 } 

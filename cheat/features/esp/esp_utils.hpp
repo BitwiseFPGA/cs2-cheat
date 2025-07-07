@@ -44,12 +44,8 @@ namespace Utils {
 }
 
 namespace Drawing {
-    inline ImDrawList* GetDrawList() {
-        return ImGui::GetBackgroundDrawList();
-    }
-
-    inline void DrawString(const Vector2& pos, const char* text, const ImColor& color = ImColor(255, 255, 255, 255)) {
-        GetDrawList()->AddText(ImVec2(pos.x, pos.y), color, text);
+    inline void DrawString(Renderer* renderer, const Vector2& pos, const char* text, const ImColor& color = ImColor(255, 255, 255, 255)) {
+        renderer->get_draw_list()->AddText(ImVec2(pos.x, pos.y), color, text);
     }
 
     inline ImRect GetBoundingBox(const Vector3& mins, const Vector3& maxs, const Matrix4x4& view_matrix) {
@@ -109,10 +105,8 @@ namespace Drawing {
         return ImRect(min_x, min_y, max_x, max_y);
     }
 
-    inline void DrawSphere(const Vector3& world_center, const ImColor& color, float radius, Engine* engine, int segments = 16) {
+    inline void DrawSphere(Renderer* renderer, const Vector3& world_center, const ImColor& color, float radius, Engine* engine, int segments = 16) {
         if (!engine) return;
-        
-        ImDrawList* draw_list = GetDrawList();
         
         // Generate sphere vertices
         std::vector<Vector3> vertices;
@@ -162,7 +156,7 @@ namespace Drawing {
         // Draw wireframe edges
         for (const auto& edge : edges) {
             if (vertex_visible[edge.first] && vertex_visible[edge.second]) {
-                draw_list->AddLine(
+                renderer->get_draw_list()->AddLine(
                     ImVec2(screen_vertices[edge.first].x, screen_vertices[edge.first].y),
                     ImVec2(screen_vertices[edge.second].x, screen_vertices[edge.second].y),
                     color,
@@ -172,7 +166,7 @@ namespace Drawing {
         }
     }
 
-    inline void DrawVoxelCube(const Vector3& center, float size, float density, Engine* engine, 
+    inline void DrawVoxelCube(Renderer* renderer, const Vector3& center, float size, float density, Engine* engine, 
                               float min_density_threshold = 0.01f, 
                               float max_opacity = 0.8f, 
                               float density_multiplier = 1.0f,
@@ -216,8 +210,6 @@ namespace Drawing {
         }
 
         if (!all_corners_visible) return;
-
-        auto draw_list = GetDrawList();
 
         // Define cube faces with vertex indices and calculate average depth
         struct Face {
@@ -281,7 +273,7 @@ namespace Drawing {
         // Draw faces from back to front
         for (const auto& face : faces) {
             // Draw filled face
-            draw_list->AddQuadFilled(
+            renderer->get_draw_list()->AddQuadFilled(
                 ImVec2(screen_corners[face.indices[0]].x, screen_corners[face.indices[0]].y),
                 ImVec2(screen_corners[face.indices[1]].x, screen_corners[face.indices[1]].y),
                 ImVec2(screen_corners[face.indices[2]].x, screen_corners[face.indices[2]].y),
@@ -293,7 +285,7 @@ namespace Drawing {
             if (show_edges) {
                 for (int i = 0; i < 4; i++) {
                     int j = (i + 1) % 4;
-                    draw_list->AddLine(
+                    renderer->get_draw_list()->AddLine(
                         ImVec2(screen_corners[face.indices[i]].x, screen_corners[face.indices[i]].y),
                         ImVec2(screen_corners[face.indices[j]].x, screen_corners[face.indices[j]].y),
                         final_edge_color,
@@ -306,47 +298,48 @@ namespace Drawing {
 }
 
 // Drawing helper functions
-inline void DrawString(const Vector2& pos, const char* text, const ImColor& color = ImColor(255, 255, 255, 255)) {
-    Drawing::GetDrawList()->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + ImGui::CalcTextSize(text).x, pos.y + ImGui::CalcTextSize(text).y), ImColor(0, 0, 0, 180));
-    Drawing::GetDrawList()->AddText(ImVec2(pos.x, pos.y), color, text);
+inline void DrawString(Renderer* renderer, const Vector2& pos, const char* text, const ImColor& color = ImColor(255, 255, 255, 255)) {
+    renderer->get_draw_list()->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + ImGui::CalcTextSize(text).x, pos.y + ImGui::CalcTextSize(text).y), ImColor(0, 0, 0, 180));
+    renderer->get_draw_list()->AddText(ImVec2(pos.x, pos.y), color, text);
 }
 
-inline void DrawLine(const Vector2& start, const Vector2& end, float thickness, const ImColor& color) {
-    Drawing::GetDrawList()->AddLine(ImVec2(start.x, start.y), ImVec2(end.x, end.y), color, thickness);
+inline void DrawLine(Renderer* renderer, const Vector2& start, const Vector2& end, float thickness, const ImColor& color) {
+    renderer->get_draw_list()->AddLine(ImVec2(start.x, start.y), ImVec2(end.x, end.y), color, thickness);
 }
 
-inline void DrawRect(const Vector2& min, const Vector2& max, const ImColor& color, float thickness, bool corners_only = false, const Vector2& corner_size = Vector2(0, 0)) {
+inline void DrawRect(Renderer* renderer, const Vector2& min, const Vector2& max, const ImColor& color, float thickness, bool corners_only = false, const Vector2& corner_size = Vector2(0, 0)) {
     if (corners_only && corner_size.x > 0 && corner_size.y > 0) {
         // Draw corner lines
         float corner_w = corner_size.x;
         float corner_h = corner_size.y;
         
         // Top-left corner
-        Drawing::GetDrawList()->AddLine(ImVec2(min.x, min.y), ImVec2(min.x + corner_w, min.y), color, thickness);
-        Drawing::GetDrawList()->AddLine(ImVec2(min.x, min.y), ImVec2(min.x, min.y + corner_h), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(min.x, min.y), ImVec2(min.x + corner_w, min.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(min.x, min.y), ImVec2(min.x, min.y + corner_h), color, thickness);
         
         // Top-right corner
-        Drawing::GetDrawList()->AddLine(ImVec2(max.x - corner_w, min.y), ImVec2(max.x, min.y), color, thickness);
-        Drawing::GetDrawList()->AddLine(ImVec2(max.x, min.y), ImVec2(max.x, min.y + corner_h), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(max.x - corner_w, min.y), ImVec2(max.x, min.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(max.x, min.y), ImVec2(max.x, min.y + corner_h), color, thickness);
         
         // Bottom-left corner
-        Drawing::GetDrawList()->AddLine(ImVec2(min.x, max.y - corner_h), ImVec2(min.x, max.y), color, thickness);
-        Drawing::GetDrawList()->AddLine(ImVec2(min.x, max.y), ImVec2(min.x + corner_w, max.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(min.x, max.y - corner_h), ImVec2(min.x, max.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(min.x, max.y), ImVec2(min.x + corner_w, max.y), color, thickness);
         
         // Bottom-right corner
-        Drawing::GetDrawList()->AddLine(ImVec2(max.x, max.y - corner_h), ImVec2(max.x, max.y), color, thickness);
-        Drawing::GetDrawList()->AddLine(ImVec2(max.x - corner_w, max.y), ImVec2(max.x, max.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(max.x, max.y - corner_h), ImVec2(max.x, max.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(max.x - corner_w, max.y), ImVec2(max.x, max.y), color, thickness);
     } else {
-        Drawing::GetDrawList()->AddRect(ImVec2(min.x, min.y), ImVec2(max.x, max.y), color, 0.0f, 0, thickness);
+        renderer->get_draw_list()->AddRect(ImVec2(min.x, min.y), ImVec2(max.x, max.y), color, 0.0f, 0, thickness);
     }
 }
 
-inline void DrawFilledRect(const Vector2& min, const Vector2& max, const ImColor& color) {
-    Drawing::GetDrawList()->AddRectFilled(ImVec2(min.x, min.y), ImVec2(max.x, max.y), color);
+inline void DrawFilledRect(Renderer* renderer, const Vector2& min, const Vector2& max, const ImColor& color) {
+    renderer->get_draw_list()->AddRectFilled(ImVec2(min.x, min.y), ImVec2(max.x, max.y), color);
 }
 
 // Enhanced DrawRect with shadow and fill support
 inline void DrawRectWithOptions(
+    Renderer* renderer,
     const Vector2& min, 
     const Vector2& max, 
     const ImColor& color, 
@@ -365,7 +358,7 @@ inline void DrawRectWithOptions(
         Vector2 shadow_max = Vector2(max.x + shadow_offset, max.y + shadow_offset);
         
         if (filled) {
-            Drawing::GetDrawList()->AddRectFilled(
+            renderer->get_draw_list()->AddRectFilled(
                 ImVec2(shadow_min.x, shadow_min.y), 
                 ImVec2(shadow_max.x, shadow_max.y), 
                 shadow_color
@@ -376,28 +369,28 @@ inline void DrawRectWithOptions(
             float corner_h = corner_size.y;
             
             // Top-left corner shadow
-            Drawing::GetDrawList()->AddLine(ImVec2(shadow_min.x, shadow_min.y), ImVec2(shadow_min.x + corner_w, shadow_min.y), shadow_color, thickness);
-            Drawing::GetDrawList()->AddLine(ImVec2(shadow_min.x, shadow_min.y), ImVec2(shadow_min.x, shadow_min.y + corner_h), shadow_color, thickness);
+            renderer->get_draw_list()->AddLine(ImVec2(shadow_min.x, shadow_min.y), ImVec2(shadow_min.x + corner_w, shadow_min.y), shadow_color, thickness);
+            renderer->get_draw_list()->AddLine(ImVec2(shadow_min.x, shadow_min.y), ImVec2(shadow_min.x, shadow_min.y + corner_h), shadow_color, thickness);
             
             // Top-right corner shadow
-            Drawing::GetDrawList()->AddLine(ImVec2(shadow_max.x - corner_w, shadow_min.y), ImVec2(shadow_max.x, shadow_min.y), shadow_color, thickness);
-            Drawing::GetDrawList()->AddLine(ImVec2(shadow_max.x, shadow_min.y), ImVec2(shadow_max.x, shadow_min.y + corner_h), shadow_color, thickness);
+            renderer->get_draw_list()->AddLine(ImVec2(shadow_max.x - corner_w, shadow_min.y), ImVec2(shadow_max.x, shadow_min.y), shadow_color, thickness);
+            renderer->get_draw_list()->AddLine(ImVec2(shadow_max.x, shadow_min.y), ImVec2(shadow_max.x, shadow_min.y + corner_h), shadow_color, thickness);
             
             // Bottom-left corner shadow
-            Drawing::GetDrawList()->AddLine(ImVec2(shadow_min.x, shadow_max.y - corner_h), ImVec2(shadow_min.x, shadow_max.y), shadow_color, thickness);
-            Drawing::GetDrawList()->AddLine(ImVec2(shadow_min.x, shadow_max.y), ImVec2(shadow_min.x + corner_w, shadow_max.y), shadow_color, thickness);
+            renderer->get_draw_list()->AddLine(ImVec2(shadow_min.x, shadow_max.y - corner_h), ImVec2(shadow_min.x, shadow_max.y), shadow_color, thickness);
+            renderer->get_draw_list()->AddLine(ImVec2(shadow_min.x, shadow_max.y), ImVec2(shadow_min.x + corner_w, shadow_max.y), shadow_color, thickness);
             
             // Bottom-right corner shadow
-            Drawing::GetDrawList()->AddLine(ImVec2(shadow_max.x, shadow_max.y - corner_h), ImVec2(shadow_max.x, shadow_max.y), shadow_color, thickness);
-            Drawing::GetDrawList()->AddLine(ImVec2(shadow_max.x - corner_w, shadow_max.y), ImVec2(shadow_max.x, shadow_max.y), shadow_color, thickness);
+            renderer->get_draw_list()->AddLine(ImVec2(shadow_max.x, shadow_max.y - corner_h), ImVec2(shadow_max.x, shadow_max.y), shadow_color, thickness);
+            renderer->get_draw_list()->AddLine(ImVec2(shadow_max.x - corner_w, shadow_max.y), ImVec2(shadow_max.x, shadow_max.y), shadow_color, thickness);
         } else {
-            Drawing::GetDrawList()->AddRect(ImVec2(shadow_min.x, shadow_min.y), ImVec2(shadow_max.x, shadow_max.y), shadow_color, 0.0f, 0, thickness);
+            renderer->get_draw_list()->AddRect(ImVec2(shadow_min.x, shadow_min.y), ImVec2(shadow_max.x, shadow_max.y), shadow_color, 0.0f, 0, thickness);
         }
     }
     
     // Draw filled background
     if (filled) {
-        Drawing::GetDrawList()->AddRectFilled(ImVec2(min.x, min.y), ImVec2(max.x, max.y), fill_color);
+        renderer->get_draw_list()->AddRectFilled(ImVec2(min.x, min.y), ImVec2(max.x, max.y), fill_color);
     }
     
     // Draw the main outline
@@ -407,21 +400,21 @@ inline void DrawRectWithOptions(
         float corner_h = corner_size.y;
         
         // Top-left corner
-        Drawing::GetDrawList()->AddLine(ImVec2(min.x, min.y), ImVec2(min.x + corner_w, min.y), color, thickness);
-        Drawing::GetDrawList()->AddLine(ImVec2(min.x, min.y), ImVec2(min.x, min.y + corner_h), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(min.x, min.y), ImVec2(min.x + corner_w, min.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(min.x, min.y), ImVec2(min.x, min.y + corner_h), color, thickness);
         
         // Top-right corner
-        Drawing::GetDrawList()->AddLine(ImVec2(max.x - corner_w, min.y), ImVec2(max.x, min.y), color, thickness);
-        Drawing::GetDrawList()->AddLine(ImVec2(max.x, min.y), ImVec2(max.x, min.y + corner_h), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(max.x - corner_w, min.y), ImVec2(max.x, min.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(max.x, min.y), ImVec2(max.x, min.y + corner_h), color, thickness);
         
         // Bottom-left corner
-        Drawing::GetDrawList()->AddLine(ImVec2(min.x, max.y - corner_h), ImVec2(min.x, max.y), color, thickness);
-        Drawing::GetDrawList()->AddLine(ImVec2(min.x, max.y), ImVec2(min.x + corner_w, max.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(min.x, max.y - corner_h), ImVec2(min.x, max.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(min.x, max.y), ImVec2(min.x + corner_w, max.y), color, thickness);
         
         // Bottom-right corner
-        Drawing::GetDrawList()->AddLine(ImVec2(max.x, max.y - corner_h), ImVec2(max.x, max.y), color, thickness);
-        Drawing::GetDrawList()->AddLine(ImVec2(max.x - corner_w, max.y), ImVec2(max.x, max.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(max.x, max.y - corner_h), ImVec2(max.x, max.y), color, thickness);
+        renderer->get_draw_list()->AddLine(ImVec2(max.x - corner_w, max.y), ImVec2(max.x, max.y), color, thickness);
     } else {
-        Drawing::GetDrawList()->AddRect(ImVec2(min.x, min.y), ImVec2(max.x, max.y), color, 0.0f, 0, thickness);
+        renderer->get_draw_list()->AddRect(ImVec2(min.x, min.y), ImVec2(max.x, max.y), color, 0.0f, 0, thickness);
     }
 } 

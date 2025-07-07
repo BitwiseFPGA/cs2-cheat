@@ -32,9 +32,9 @@ private:
     
     void RenderPlayers();
     void RenderWorldEntities();
+    void RenderSmokes();
     void RenderMapTriangles();
     
-    // Helper functions for entity classification
     bool IsWeaponEntity(uint32_t classname_hash) const;
     bool IsGrenadeEntity(uint32_t classname_hash) const;
     bool IsHostageEntity(uint32_t classname_hash) const;

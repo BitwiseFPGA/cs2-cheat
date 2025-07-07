@@ -3,12 +3,12 @@
 
 class VoxelData {
 public:
-	VoxelData() : worldPos(0, 0, 0), density(0.0f), hasSmoke(false) {}
+	VoxelData() : world_position(0, 0, 0), density(0.0f), has_smoke(false) {}
     VoxelData(const Vector3& pos, float dens, bool smoke) 
-		: worldPos(pos), density(dens), hasSmoke(smoke) {
+		: world_position(pos), density(dens), has_smoke(smoke) {
 	}
 
-    Vector3 worldPos;
+    Vector3 world_position;
     float density;
-    bool hasSmoke;
+    bool has_smoke;
 };

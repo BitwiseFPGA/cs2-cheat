@@ -51,13 +51,7 @@ void EspFeature::render() {
     }
 
     if (m_settings.smoke.enabled) {
-        for (auto& smoke : m_entity_cache->get_smokes()) {
-            Player* local_player = m_entity_cache->get_local_player();
-            if (local_player) {
-                float distance = smoke.smoke_center.distance_to(local_player->origin) * 0.1f;
-            }
-            
-        }
+        RenderSmokes();
     }
 
     if (m_settings.player.enabled) {
@@ -135,7 +129,7 @@ void EspFeature::RenderPlayers() {
         case BOX_TYPE::BOX_NONE:
             break;
         case BOX_TYPE::BOX_2D:
-            DrawRectWithOptions(
+            DrawRectWithOptions(m_renderer,
                 Vector2(box.Min.x, box.Min.y),
                 Vector2(box.Max.x, box.Max.y),
                 box_color,
@@ -148,7 +142,7 @@ void EspFeature::RenderPlayers() {
             );
             break;
         case BOX_TYPE::BOX_2D_CORNER:
-            DrawRectWithOptions(
+            DrawRectWithOptions(m_renderer,
                 Vector2(box.Min.x, box.Min.y),
                 Vector2(box.Max.x, box.Max.y),
                 box_color,
@@ -164,7 +158,7 @@ void EspFeature::RenderPlayers() {
             );
             break;
         case BOX_TYPE::BOX_2D_FILLED:
-            DrawRectWithOptions(
+            DrawRectWithOptions(m_renderer,
                 Vector2(box.Min.x, box.Min.y),
                 Vector2(box.Max.x, box.Max.y),
                 box_color,
@@ -191,7 +185,7 @@ void EspFeature::RenderPlayers() {
 
             ImVec2 player_name_size = ImGui::CalcTextSize(formatted_name.c_str());
             float center_x = (box.Min.x + box.Max.x - player_name_size.x) * 0.5f;
-            DrawString(
+            DrawString(m_renderer,
                 Vector2(center_x, box.Min.y - player_name_size.y - 2.0f),
                 formatted_name.c_str(),
                 m_settings.player.name_color
@@ -202,7 +196,7 @@ void EspFeature::RenderPlayers() {
         if (m_settings.player.player_info & PLAYER_INFO_WEAPON) {
             ImVec2 weapon_name_size = ImGui::CalcTextSize(player.weapon_name.c_str());
             float center_x = (box.Min.x + box.Max.x - weapon_name_size.x) * 0.5f;
-            DrawString(
+            DrawString(m_renderer,
                 Vector2(center_x, box.Max.y + 2.0f),
                 player.weapon_name.c_str(),
                 m_settings.player.name_color
@@ -243,7 +237,7 @@ void EspFeature::RenderPlayers() {
                 ImColor bone_color = (is_bone1_visible && is_bone2_visible) ?
                     m_settings.player.color_visible : m_settings.player.color_invisible;
 
-                DrawLine(bone1_screen_pos, bone2_screen_pos, 1.f, bone_color);
+                DrawLine(m_renderer, bone1_screen_pos, bone2_screen_pos, 1.f, bone_color);
             }
         }
 
@@ -253,7 +247,7 @@ void EspFeature::RenderPlayers() {
             ImVec4 health_bar_color = Utils::GetHealthBarColor(player.health);
 
             // Background
-            DrawRect(
+            DrawRect(m_renderer,
                 Vector2(box.Min.x - 6.0f, box.Min.y),
                 Vector2(box.Min.x - 2.0f, box.Max.y),
                 ImColor(0, 0, 0, 255),
@@ -261,7 +255,7 @@ void EspFeature::RenderPlayers() {
             );
 
             // Health fill
-            DrawFilledRect(
+            DrawFilledRect(m_renderer,
                 Vector2(box.Min.x - 5.0f, box.Max.y - filled_height),
                 Vector2(box.Min.x - 3.0f, box.Max.y),
                 health_bar_color
@@ -271,7 +265,7 @@ void EspFeature::RenderPlayers() {
                 std::string health_text = std::to_string(player.health);
                 ImVec2 text_size = ImGui::CalcTextSize(health_text.c_str());
                 float text_y = box.Max.y - filled_height;
-                DrawString(
+                DrawString(m_renderer,
                     Vector2(box.Min.x - 8.0f - text_size.x, text_y),
                     health_text.c_str(),
                     ImColor(255, 255, 255, 255)
@@ -286,7 +280,7 @@ void EspFeature::RenderPlayers() {
                 const ImVec4 armor_bar_color = ImColor(0, 0, 255, 255);
 
                 // Background
-                DrawRect(
+                DrawRect(m_renderer,
                     Vector2(box.Max.x + 2.0f, box.Min.y),
                     Vector2(box.Max.x + 6.0f, box.Max.y),
                     ImColor(0, 0, 0, 255),
@@ -294,7 +288,7 @@ void EspFeature::RenderPlayers() {
                 );
 
                 // Armor fill
-                DrawFilledRect(
+                DrawFilledRect(m_renderer,
                     Vector2(box.Max.x + 3.0f, box.Max.y - armor_height),
                     Vector2(box.Max.x + 5.0f, box.Max.y),
                     armor_bar_color
@@ -308,7 +302,7 @@ void EspFeature::RenderPlayers() {
         if (m_settings.player.player_info & PLAYER_INFO_C4_CARRIER) {
             if (player.has_c4) {
                 const char* c4_text = "C4";
-                DrawString(
+                DrawString(m_renderer,
                     Vector2(box.Max.x + 8.0f, indicator_y),
                     c4_text,
                     ImColor(255, 0, 0, 255)
@@ -320,7 +314,7 @@ void EspFeature::RenderPlayers() {
         if (m_settings.player.player_info & PLAYER_INFO_DEFUSER) {
             if (player.has_defuser) {
                 const char* defuser_text = "DEFUSER";
-                DrawString(
+                DrawString(m_renderer,
                     Vector2(box.Max.x + 8.0f, indicator_y),
                     defuser_text,
                     ImColor(0, 255, 0, 255)
@@ -332,7 +326,7 @@ void EspFeature::RenderPlayers() {
         if (m_settings.player.player_info & PLAYER_INFO_HELMET) {
             if (player.has_helmet) {
                 const char* helmet_text = "HELMET";
-                DrawString(
+                DrawString(m_renderer,
                     Vector2(box.Max.x + 8.0f, indicator_y),
                     helmet_text,
                     ImColor(255, 255, 0, 255)
@@ -421,7 +415,7 @@ void EspFeature::RenderWorldEntities() {
             if (box.Min.x != 0 || box.Min.y != 0 || box.Max.x != 0 || box.Max.y != 0) {
                 switch (m_settings.entities.box_type) {
                 case BOX_TYPE::BOX_2D:
-                    DrawRectWithOptions(
+                    DrawRectWithOptions(m_renderer,
                         Vector2(box.Min.x, box.Min.y),
                         Vector2(box.Max.x, box.Max.y),
                         entity_color,
@@ -434,7 +428,7 @@ void EspFeature::RenderWorldEntities() {
                     );
                     break;
                 case BOX_TYPE::BOX_2D_CORNER:
-                    DrawRectWithOptions(
+                    DrawRectWithOptions(m_renderer,
                         Vector2(box.Min.x, box.Min.y),
                         Vector2(box.Max.x, box.Max.y),
                         entity_color,
@@ -450,7 +444,7 @@ void EspFeature::RenderWorldEntities() {
                     );
                     break;
                 case BOX_TYPE::BOX_2D_FILLED:
-                    DrawRectWithOptions(
+                    DrawRectWithOptions(m_renderer,
                         Vector2(box.Min.x, box.Min.y),
                         Vector2(box.Max.x, box.Max.y),
                         entity_color,
@@ -478,10 +472,33 @@ void EspFeature::RenderWorldEntities() {
             }
 
             ImVec2 text_size = ImGui::CalcTextSize(formatted_name.c_str());
-            DrawString(
+            DrawString(m_renderer,
                 Vector2(screen_pos.x - text_size.x * 0.5f, screen_pos.y - text_size.y - 5.0f),
                 formatted_name.c_str(),
                 m_settings.entities.name_color
+            );
+        }
+    }
+}
+
+void EspFeature::RenderSmokes()
+{
+    for (auto& smoke : m_entity_cache->get_smokes()) {
+        Player* local_player = m_entity_cache->get_local_player();
+        if (local_player) {
+            float distance = smoke.smoke_center.distance_to(local_player->origin) * 0.1f;
+        }
+
+        for (auto& voxel : smoke.voxels) {
+            Vector2 screen_pos;
+            if (!m_engine->world_to_screen(voxel.world_position, screen_pos)) {
+                continue;
+            }
+
+            m_renderer->get_draw_list()->AddCircleFilled(
+                ImVec2(screen_pos.x, screen_pos.y),
+                voxel.density,
+                ImColor(255, 255, 255, 255)
             );
         }
     }
@@ -533,7 +550,7 @@ void EspFeature::RenderMapTriangles() {
             ImColor fill_color = m_settings.map.triangle_color;
             fill_color.Value.w = m_settings.map.triangle_alpha;
             
-            Drawing::GetDrawList()->AddTriangleFilled(
+            m_renderer->get_draw_list()->AddTriangleFilled(
                 ImVec2(screen_vertices[0].x, screen_vertices[0].y),
                 ImVec2(screen_vertices[1].x, screen_vertices[1].y),
                 ImVec2(screen_vertices[2].x, screen_vertices[2].y),
@@ -543,7 +560,7 @@ void EspFeature::RenderMapTriangles() {
 
         // Draw wireframe
         ImColor wireframe_color = m_settings.map.wireframe_color;
-        Drawing::GetDrawList()->AddTriangle(
+        m_renderer->get_draw_list()->AddTriangle(
             ImVec2(screen_vertices[0].x, screen_vertices[0].y),
             ImVec2(screen_vertices[1].x, screen_vertices[1].y),
             ImVec2(screen_vertices[2].x, screen_vertices[2].y),

@@ -42,6 +42,7 @@ public:
     Vector2 get_screen_size() const override { return m_screen_size; }
     Vector2 get_screen_center() const override { return m_screen_size / 2; }
     float get_framerate() const override { return m_current_fps; }
+    ImDrawList* get_draw_list() const { return m_draw_list; }
 
     ID3D11Device* get_device() const { return m_device; }
     ID3D11DeviceContext* get_context() const { return m_context; }
@@ -66,6 +67,8 @@ private:
     float m_frame_time_accumulator;
     int m_frame_count;
     std::chrono::high_resolution_clock::time_point m_last_time;
+
+    ImDrawList* m_draw_list;
 
     bool create_overlay_window();
     bool create_device_and_swap_chain();

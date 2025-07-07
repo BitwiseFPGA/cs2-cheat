@@ -38,6 +38,7 @@ D3D11Renderer::D3D11Renderer()
     , m_frame_time_accumulator(0.0f)
     , m_frame_count(0)
     , m_last_time(std::chrono::high_resolution_clock::now())
+    , m_draw_list(nullptr)
 {
 }
 
@@ -378,6 +379,8 @@ void D3D11Renderer::begin_imgui_frame() {
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
+
+    m_draw_list = ImGui::GetBackgroundDrawList();
 }
 
 void D3D11Renderer::end_imgui_frame() {
@@ -396,8 +399,7 @@ void D3D11Renderer::render_imgui() {
 void D3D11Renderer::draw_line(const Vector2& start, const Vector2& end, const ImColor& color, float thickness) {
     if (!m_imgui_initialized) return;
 
-    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
-    draw_list->AddLine(
+    m_draw_list->AddLine(
         ImVec2(start.x, start.y),
         ImVec2(end.x, end.y),
         color,
@@ -408,8 +410,7 @@ void D3D11Renderer::draw_line(const Vector2& start, const Vector2& end, const Im
 void D3D11Renderer::draw_rect(const Vector2& position, const Vector2& size, const ImColor& color, float thickness) {
     if (!m_imgui_initialized) return;
 
-    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
-    draw_list->AddRect(
+    m_draw_list->AddRect(
         ImVec2(position.x, position.y),
         ImVec2(position.x + size.x, position.y + size.y),
         color,
@@ -422,8 +423,7 @@ void D3D11Renderer::draw_rect(const Vector2& position, const Vector2& size, cons
 void D3D11Renderer::draw_filled_rect(const Vector2& position, const Vector2& size, const ImColor& color) {
     if (!m_imgui_initialized) return;
 
-    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
-    draw_list->AddRectFilled(
+    m_draw_list->AddRectFilled(
         ImVec2(position.x, position.y),
         ImVec2(position.x + size.x, position.y + size.y),
         color
@@ -433,8 +433,7 @@ void D3D11Renderer::draw_filled_rect(const Vector2& position, const Vector2& siz
 void D3D11Renderer::draw_circle(const Vector2& center, float radius, const ImColor& color, int segments, float thickness) {
     if (!m_imgui_initialized) return;
 
-    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
-    draw_list->AddCircle(
+    m_draw_list->AddCircle(
         ImVec2(center.x, center.y),
         radius,
         color,
@@ -446,8 +445,7 @@ void D3D11Renderer::draw_circle(const Vector2& center, float radius, const ImCol
 void D3D11Renderer::draw_filled_circle(const Vector2& center, float radius, const ImColor& color, int segments) {
     if (!m_imgui_initialized) return;
 
-    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
-    draw_list->AddCircleFilled(
+    m_draw_list->AddCircleFilled(
         ImVec2(center.x, center.y),
         radius,
         color,
@@ -458,10 +456,9 @@ void D3D11Renderer::draw_filled_circle(const Vector2& center, float radius, cons
 void D3D11Renderer::draw_text(const Vector2& position, const std::string& text, const ImColor& color, float size) {
     if (!m_imgui_initialized) return;
 
-    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
     ImFont* font = ImGui::GetFont();
 
-    draw_list->AddText(
+    m_draw_list->AddText(
         ImVec2(position.x, position.y),
         color,
         text.c_str()
