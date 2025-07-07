@@ -1,6 +1,6 @@
 #pragma once
 #include <engine/sdk/math/vector.hpp>
-#include <engine/sdk/types/entity_impl.hpp>
+#include <engine/sdk/types/entity.hpp>
 
 struct PlayerBone {
     Vector3 position;

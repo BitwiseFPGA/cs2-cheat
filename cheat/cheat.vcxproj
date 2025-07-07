@@ -157,6 +157,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="access\adapter\base_access.hpp" />
+    <ClInclude Include="engine\sdk\math\voxel.hpp" />
+    <ClInclude Include="engine\sdk\types\smoke.hpp" />
     <ClInclude Include="features\triggerbot\settings\triggerbot_settings.hpp" />
     <ClInclude Include="features\triggerbot\triggerbot.hpp" />
     <ClInclude Include="input\adapter\base_input.h" />
@@ -176,8 +178,8 @@
     <ClInclude Include="engine\cache\world\world_cache.hpp" />
     <ClInclude Include="engine\sdk\offsets\static\client_dll.hpp" />
     <ClInclude Include="engine\sdk\offsets\static\offsets.hpp" />
-    <ClInclude Include="engine\sdk\types\entity_impl.hpp" />
-    <ClInclude Include="engine\sdk\types\player_impl.hpp" />
+    <ClInclude Include="engine\sdk\types\entity.hpp" />
+    <ClInclude Include="engine\sdk\types\player.hpp" />
     <ClInclude Include="features\aimbot\settings\aimbot_settings.hpp" />
     <ClInclude Include="features\base_feature.hpp" />
     <ClInclude Include="features\aimbot\aimbot.hpp" />
@@ -201,6 +203,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="access\adapter\base_access.cpp" />
+    <ClCompile Include="engine\sdk\types\smoke.cpp" />
     <ClCompile Include="features\triggerbot\settings\triggerbot_settings.cpp" />
     <ClCompile Include="features\triggerbot\triggerbot.cpp" />
     <ClCompile Include="input\adapter\base_input.cpp" />

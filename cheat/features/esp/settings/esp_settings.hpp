@@ -97,4 +97,9 @@ public:
         ImColor triangle_color = ImColor(0.0f, 1.0f, 1.0f, 0.1f);
         ImColor wireframe_color = ImColor(0.0f, 1.0f, 1.0f, 0.5f);
     } map;
+    
+    // Smoke ESP Settings
+    struct SmokeSettings {
+        bool enabled = true;
+    } smoke;
 }; 

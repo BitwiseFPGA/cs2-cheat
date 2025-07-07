@@ -4,7 +4,7 @@
 #include <renderer/renderer.hpp>
 #include <input/input.hpp>
 #include <engine/engine.hpp>
-#include <engine/sdk/types/player_impl.hpp>
+#include <engine/sdk/types/player.hpp>
 #include <engine/physics/traceline.hpp>
 #include <logger/logger.hpp>
 #include <algorithm>

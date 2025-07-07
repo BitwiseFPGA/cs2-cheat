@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <string>
 
-// FNV-1a hash function for entity class name comparison
 constexpr uint32_t fnv1a_32(const char* str) {
     uint32_t hash = 0x811C9DC5;
     while (*str) {
@@ -49,6 +48,16 @@ void EspFeature::update() {
 void EspFeature::render() {
     if (!is_feature_enabled() || !m_initialized || !m_renderer || !m_engine || !m_entity_cache) {
         return;
+    }
+
+    if (m_settings.smoke.enabled) {
+        for (auto& smoke : m_entity_cache->get_smokes()) {
+            Player* local_player = m_entity_cache->get_local_player();
+            if (local_player) {
+                float distance = smoke.smoke_center.distance_to(local_player->origin) * 0.1f;
+            }
+            
+        }
     }
 
     if (m_settings.player.enabled) {
@@ -101,7 +110,6 @@ void EspFeature::RenderPlayers() {
         float distance = local_player ?
             player.origin.distance_to(local_player->origin) * 0.1f : 0.0f;
             
-        // Skip if player is too far away
         if (distance > m_settings.player.max_distance)
             continue;
 

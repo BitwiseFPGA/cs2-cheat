@@ -1,11 +1,19 @@
 #pragma once
+#include <engine/engine.hpp>
 #include <engine/sdk/math/vector.hpp>
 #include <engine/sdk/math/matrix.hpp>
-#include <engine/sdk/types/player_impl.hpp>
+#include <engine/sdk/types/player.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <vector>
 #include <utility>
+#include <cmath>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846f
+#endif
+
+class Engine;
 
 const std::pair<BONE_DEF, BONE_DEF> BONE_CONNECTIONS[] = {
     {BONE_DEF::HEAD, BONE_DEF::NECK},
@@ -38,6 +46,10 @@ namespace Utils {
 namespace Drawing {
     inline ImDrawList* GetDrawList() {
         return ImGui::GetBackgroundDrawList();
+    }
+
+    inline void DrawString(const Vector2& pos, const char* text, const ImColor& color = ImColor(255, 255, 255, 255)) {
+        GetDrawList()->AddText(ImVec2(pos.x, pos.y), color, text);
     }
 
     inline ImRect GetBoundingBox(const Vector3& mins, const Vector3& maxs, const Matrix4x4& view_matrix) {
@@ -95,6 +107,201 @@ namespace Drawing {
         }
 
         return ImRect(min_x, min_y, max_x, max_y);
+    }
+
+    inline void DrawSphere(const Vector3& world_center, const ImColor& color, float radius, Engine* engine, int segments = 16) {
+        if (!engine) return;
+        
+        ImDrawList* draw_list = GetDrawList();
+        
+        // Generate sphere vertices
+        std::vector<Vector3> vertices;
+        std::vector<std::pair<int, int>> edges;
+        
+        // Generate vertices for a sphere using spherical coordinates
+        for (int lat = 0; lat <= segments; lat++) {
+            float theta = M_PI * lat / segments; // 0 to PI
+            for (int lon = 0; lon <= segments; lon++) {
+                float phi = 2.0f * M_PI * lon / segments; // 0 to 2*PI
+                
+                Vector3 vertex = {
+                    world_center.x + radius * sin(theta) * cos(phi),
+                    world_center.y + radius * sin(theta) * sin(phi),
+                    world_center.z + radius * cos(theta)
+                };
+                vertices.push_back(vertex);
+            }
+        }
+        
+        // Generate edges for wireframe (longitude and latitude lines)
+        for (int lat = 0; lat < segments; lat++) {
+            for (int lon = 0; lon < segments; lon++) {
+                int current = lat * (segments + 1) + lon;
+                int next_lat = (lat + 1) * (segments + 1) + lon;
+                int next_lon = lat * (segments + 1) + (lon + 1);
+                
+                // Latitude lines
+                if (lat < segments) {
+                    edges.push_back({current, next_lat});
+                }
+                // Longitude lines
+                if (lon < segments) {
+                    edges.push_back({current, next_lon});
+                }
+            }
+        }
+        
+        // Project vertices to screen and draw edges
+        std::vector<Vector2> screen_vertices(vertices.size());
+        std::vector<bool> vertex_visible(vertices.size(), false);
+        
+        for (size_t i = 0; i < vertices.size(); i++) {
+            vertex_visible[i] = engine->world_to_screen(vertices[i], screen_vertices[i]);
+        }
+        
+        // Draw wireframe edges
+        for (const auto& edge : edges) {
+            if (vertex_visible[edge.first] && vertex_visible[edge.second]) {
+                draw_list->AddLine(
+                    ImVec2(screen_vertices[edge.first].x, screen_vertices[edge.first].y),
+                    ImVec2(screen_vertices[edge.second].x, screen_vertices[edge.second].y),
+                    color,
+                    1.0f
+                );
+            }
+        }
+    }
+
+    inline void DrawVoxelCube(const Vector3& center, float size, float density, Engine* engine, 
+                              float min_density_threshold = 0.01f, 
+                              float max_opacity = 0.8f, 
+                              float density_multiplier = 1.0f,
+                              bool use_gradient_colors = false,
+                              const ImColor& low_density_color = ImColor(1.0f, 1.0f, 1.0f, 1.0f),
+                              const ImColor& high_density_color = ImColor(0.8f, 0.8f, 0.8f, 1.0f),
+                              bool show_edges = true,
+                              float edge_thickness = 1.0f,
+                              const ImColor& edge_color = ImColor(0.7f, 0.7f, 0.7f, 1.0f)) {
+        if (!engine) return;
+        
+        // Skip voxel if density is below threshold
+        if (density < min_density_threshold) return;
+
+        const float HALF_SIZE = size * 0.5f;
+        
+        // Define the 8 corners of the cube
+        Vector3 corners[8] = {
+            {center.x - HALF_SIZE, center.y - HALF_SIZE, center.z - HALF_SIZE}, // Front bottom left (0)
+            {center.x + HALF_SIZE, center.y - HALF_SIZE, center.z - HALF_SIZE}, // Front bottom right (1)
+            {center.x + HALF_SIZE, center.y + HALF_SIZE, center.z - HALF_SIZE}, // Back bottom right (2)
+            {center.x - HALF_SIZE, center.y + HALF_SIZE, center.z - HALF_SIZE}, // Back bottom left (3)
+            {center.x - HALF_SIZE, center.y - HALF_SIZE, center.z + HALF_SIZE}, // Front top left (4)
+            {center.x + HALF_SIZE, center.y - HALF_SIZE, center.z + HALF_SIZE}, // Front top right (5)
+            {center.x + HALF_SIZE, center.y + HALF_SIZE, center.z + HALF_SIZE}, // Back top right (6)
+            {center.x - HALF_SIZE, center.y + HALF_SIZE, center.z + HALF_SIZE}  // Back top left (7)
+        };
+
+        // Project corners to screen space
+        Vector2 screen_corners[8];
+        bool all_corners_visible = true;
+        float depths[8];
+
+        for (int i = 0; i < 8; i++) {
+            if (!engine->world_to_screen(corners[i], screen_corners[i])) {
+                all_corners_visible = false;
+                break;
+            }
+            // Store Z depth for sorting
+            depths[i] = corners[i].z;
+        }
+
+        if (!all_corners_visible) return;
+
+        auto draw_list = GetDrawList();
+
+        // Define cube faces with vertex indices and calculate average depth
+        struct Face {
+            int indices[4];  // Vertex indices
+            float avg_depth; // Average depth for sorting
+            int face_idx;    // Original face index for stable sorting
+        };
+
+        Face faces[6] = {
+            {{0, 1, 2, 3}, 0.0f, 0}, // Front
+            {{5, 4, 7, 6}, 0.0f, 1}, // Back
+            {{4, 0, 3, 7}, 0.0f, 2}, // Left
+            {{1, 5, 6, 2}, 0.0f, 3}, // Right
+            {{4, 5, 1, 0}, 0.0f, 4}, // Bottom
+            {{3, 2, 6, 7}, 0.0f, 5}  // Top
+        };
+
+        // Calculate average depth for each face
+        for (auto& face : faces) {
+            face.avg_depth = 0.0f;
+            for (int i = 0; i < 4; i++) {
+                face.avg_depth += depths[face.indices[i]];
+            }
+            face.avg_depth /= 4.0f;
+        }
+
+        // Sort faces by depth (back to front)
+        std::sort(faces, faces + 6, [](const Face& a, const Face& b) {
+            return a.avg_depth > b.avg_depth;
+        });
+
+        // Calculate colors based on density and settings
+        float alpha_base = std::min(density * density_multiplier * max_opacity, max_opacity);
+        
+        ImColor face_color;
+        if (use_gradient_colors) {
+            // Interpolate between low and high density colors based on density
+            float t = std::min(density * density_multiplier, 1.0f);
+            face_color = ImColor(
+                low_density_color.Value.x * (1.0f - t) + high_density_color.Value.x * t,
+                low_density_color.Value.y * (1.0f - t) + high_density_color.Value.y * t,
+                low_density_color.Value.z * (1.0f - t) + high_density_color.Value.z * t,
+                alpha_base
+            );
+        } else {
+            face_color = ImColor(
+                low_density_color.Value.x,
+                low_density_color.Value.y,
+                low_density_color.Value.z,
+                alpha_base
+            );
+        }
+        
+        ImColor final_edge_color(
+            edge_color.Value.x,
+            edge_color.Value.y,
+            edge_color.Value.z,
+            alpha_base
+        );
+
+        // Draw faces from back to front
+        for (const auto& face : faces) {
+            // Draw filled face
+            draw_list->AddQuadFilled(
+                ImVec2(screen_corners[face.indices[0]].x, screen_corners[face.indices[0]].y),
+                ImVec2(screen_corners[face.indices[1]].x, screen_corners[face.indices[1]].y),
+                ImVec2(screen_corners[face.indices[2]].x, screen_corners[face.indices[2]].y),
+                ImVec2(screen_corners[face.indices[3]].x, screen_corners[face.indices[3]].y),
+                face_color
+            );
+
+            // Draw edges if enabled
+            if (show_edges) {
+                for (int i = 0; i < 4; i++) {
+                    int j = (i + 1) % 4;
+                    draw_list->AddLine(
+                        ImVec2(screen_corners[face.indices[i]].x, screen_corners[face.indices[i]].y),
+                        ImVec2(screen_corners[face.indices[j]].x, screen_corners[face.indices[j]].y),
+                        final_edge_color,
+                        edge_thickness
+                    );
+                }
+            }
+        }
     }
 }
 

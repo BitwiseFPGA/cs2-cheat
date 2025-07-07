@@ -14,7 +14,7 @@ class AccessManager;
 class TracelineManager;
 
 namespace physx {
-	constexpr uintptr_t trace_mng = 0x182DB00;
+	constexpr uintptr_t trace_mng = 0x182FB20;
 	constexpr uintptr_t spatial_trees_base = 0x20F8;
 
     struct TreeNode {

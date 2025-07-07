@@ -1,7 +1,8 @@
 #pragma once
 #include <logger/logger.hpp>
-#include <engine/sdk/types/entity_impl.hpp>
-#include <engine/sdk/types/player_impl.hpp>
+#include <engine/sdk/types/entity.hpp>
+#include <engine/sdk/types/player.hpp>
+#include <engine/sdk/types/smoke.hpp>
 #include <engine/sdk/math/matrix.hpp>
 #include <access/adapter/base_access.hpp>
 #include <vector>
@@ -30,7 +31,7 @@ public:
     // Getters
     std::vector<GameEntity>& get_entities() { return m_entities; }
     std::vector<Player>& get_players() { return m_players; }
-
+    std::vector<SmokeGrenade>& get_smokes() { return m_smokes; }
     Player* get_local_player() { return m_local_player; }
 
     GameEntity* get_c4() { return m_c4; }
@@ -45,6 +46,7 @@ private:
     void fetch_entities();
     void fetch_entity_data(std::vector<GameEntity*>& entities_to_update);
     void fetch_player_data(std::vector<Player*>& players_to_update);
+    void fetch_other_entity_data(const std::vector<GameEntity>& entities);
     
     AccessManager* m_access_manager;
     bool m_initialized;
@@ -63,6 +65,7 @@ private:
     // Entity data
     std::vector<uintptr_t> m_list_entries;
     std::vector<GameEntity> m_entities;
+    std::vector<SmokeGrenade> m_smokes;
     std::vector<Player> m_players;
     
     // Quick access pointers

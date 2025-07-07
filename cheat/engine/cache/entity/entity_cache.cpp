@@ -85,6 +85,7 @@ void EntityCache::update() {
     try {
         fetch_globals();
         fetch_entities();
+        fetch_other_entity_data(m_entities);
 		update_frame();
 
         m_last_update = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -444,6 +445,97 @@ void EntityCache::fetch_player_data(std::vector<Player*>& players_to_update) {
     }
 }
 
+void EntityCache::fetch_other_entity_data(const std::vector<GameEntity>& entities) {
+    if (!m_scatter_handle || entities.empty()) {
+        return;
+    }
+    m_smokes.clear();
+
+    std::vector<SmokeGrenade> smoke_entities_to_update;
+    for (const auto& entity : entities) {
+        if (entity.classname_hash == fnv1a_32("C_SmokeGrenadeProjectile")) {
+            smoke_entities_to_update.emplace_back(entity);
+        }
+    }
+
+    if (smoke_entities_to_update.empty()) {
+        return;
+    }
+
+    for (auto& smoke : smoke_entities_to_update) {
+        smoke.object_smoke_ptr = smoke.ptr + 0x1268;
+        m_access_manager->add_scatter_read(
+            m_scatter_handle,
+            smoke.object_smoke_ptr + 0xE8,
+            &smoke.smoke_center,
+            sizeof(smoke.smoke_center)
+        );
+        m_access_manager->add_scatter_read(
+            m_scatter_handle,
+            smoke.object_smoke_ptr + 0x70,
+            &smoke.voxel_grid_base,
+            sizeof(smoke.voxel_grid_base)
+        );
+        m_access_manager->add_scatter_read(
+            m_scatter_handle,
+            smoke.object_smoke_ptr + 0x100,
+            &smoke.buffer_index,
+            sizeof(smoke.buffer_index)
+        );
+    }
+    m_access_manager->scatter_read(m_scatter_handle);
+
+    std::vector<std::vector<uint64_t>> occupancy_data(smoke_entities_to_update.size());
+    for (size_t smoke_idx = 0; smoke_idx < smoke_entities_to_update.size(); ++smoke_idx) {
+        auto& smoke = smoke_entities_to_update[smoke_idx];
+        occupancy_data[smoke_idx].resize(SmokeGrenade::NUM_CHUNKS);
+        
+        for (int chunk_idx = 0; chunk_idx < SmokeGrenade::NUM_CHUNKS; chunk_idx++) {
+            m_access_manager->add_scatter_read(
+                m_scatter_handle,
+                smoke.GetOccupancyAddress(chunk_idx),
+                &occupancy_data[smoke_idx][chunk_idx],
+                sizeof(uint64_t)
+            );
+        }
+    }
+    m_access_manager->scatter_read(m_scatter_handle);
+
+    std::vector<std::vector<uint32_t>> occupied_voxels(smoke_entities_to_update.size());
+    std::vector<std::vector<float>> density_data(smoke_entities_to_update.size());
+    
+    size_t total_voxels = 0;
+    for (size_t smoke_idx = 0; smoke_idx < smoke_entities_to_update.size(); ++smoke_idx) {
+        auto& smoke = smoke_entities_to_update[smoke_idx];
+        occupied_voxels[smoke_idx] = smoke.GetOccupiedVoxelIndices(occupancy_data[smoke_idx]);
+        density_data[smoke_idx].resize(occupied_voxels[smoke_idx].size());
+        total_voxels += occupied_voxels[smoke_idx].size();
+    }
+
+    if (total_voxels > 0) {
+        for (size_t smoke_idx = 0; smoke_idx < smoke_entities_to_update.size(); ++smoke_idx) {
+            auto& smoke = smoke_entities_to_update[smoke_idx];
+            for (size_t voxel_idx = 0; voxel_idx < occupied_voxels[smoke_idx].size(); ++voxel_idx) {
+                uint32_t voxel_index = occupied_voxels[smoke_idx][voxel_idx];
+                m_access_manager->add_scatter_read(
+                    m_scatter_handle,
+                    smoke.GetDensityAddress(voxel_index),
+                    &density_data[smoke_idx][voxel_idx],
+                    sizeof(float)
+                );
+            }
+        }
+        m_access_manager->scatter_read(m_scatter_handle);
+
+        for (size_t smoke_idx = 0; smoke_idx < smoke_entities_to_update.size(); ++smoke_idx) {
+            auto& smoke = smoke_entities_to_update[smoke_idx];
+            smoke.ProcessVoxelData(occupied_voxels[smoke_idx], density_data[smoke_idx]);
+        }
+    }
+
+    m_smokes = std::move(smoke_entities_to_update);
+}
+
 void EntityCache::update_frame() {
     if (!m_scatter_handle) {
         return;
@@ -465,9 +557,9 @@ void EntityCache::update_frame() {
         if (entity.classname_hash == fnv1a_32("C_C4")) {
             m_c4 = &entity;
             m_access_manager->add_scatter_read(
-                m_scatter_handle, 
-                entity.ptr + cs2_dumper::schemas::client_dll::C_BaseEntity::m_hOwnerEntity, 
-                &entity.owner_ptr, 
+                m_scatter_handle,
+                entity.ptr + cs2_dumper::schemas::client_dll::C_BaseEntity::m_hOwnerEntity,
+                &entity.owner_ptr,
                 sizeof(entity.owner_ptr)
             );
         }
@@ -554,6 +646,7 @@ void EntityCache::clear() {
     
     m_entities.clear();
     m_players.clear();
+    m_smokes.clear();
     m_list_entries.clear();
     
     m_local_player = nullptr;
