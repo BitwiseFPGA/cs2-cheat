@@ -129,7 +129,7 @@ void WorldCache::load_world_triangles() {
 
         if (m_prev_physx_world == physx_world) {
             return;
-		}
+        }
 
         m_access_manager->add_scatter_read(m_scatter_handle, physx_world + physx::spatial_trees_base, &spatial_trees_base, sizeof(spatial_trees_base));
         if (!m_access_manager->scatter_read(m_scatter_handle)) {
@@ -144,88 +144,113 @@ void WorldCache::load_world_triangles() {
 
         m_triangles.clear();
 
-        for (int tree_index = 0; tree_index < 3; tree_index++) {
-            uintptr_t spatial_tree = spatial_trees_base + (tree_index * 40);
-            
-            int root_index = 0;
-            uintptr_t nodes_array = 0;
-            int array_size = 0;
+        std::vector<physx::SpatialTree> spatial_trees(3);
 
-            m_access_manager->add_scatter_read(m_scatter_handle, spatial_tree, &root_index, sizeof(root_index));
-            m_access_manager->add_scatter_read(m_scatter_handle, spatial_tree + 0x10, &nodes_array, sizeof(nodes_array));
-            m_access_manager->add_scatter_read(m_scatter_handle, spatial_tree + 0x18, &array_size, sizeof(array_size));
-            if (!m_access_manager->scatter_read(m_scatter_handle)) {
-                logger::debug("Failed to read tree " + std::to_string(tree_index) + " header, skipping");
-                continue;
+        for (int i = 0; i < 3; i++) {
+            auto& tree = spatial_trees[i];
+            tree.base = spatial_trees_base + (i * 40);
+            m_access_manager->add_scatter_read(m_scatter_handle, tree.base, &tree.root_index, sizeof(tree.root_index));
+            m_access_manager->add_scatter_read(m_scatter_handle, tree.base + 0x10, &tree.nodes_array, sizeof(tree.nodes_array));
+            m_access_manager->add_scatter_read(m_scatter_handle, tree.base + 0x18, &tree.array_size, sizeof(tree.array_size));
+        }
+        m_access_manager->scatter_read(m_scatter_handle);
+
+        size_t total_nodes = 0;
+        for (auto& tree : spatial_trees) {
+            total_nodes += tree.array_size;
+        }
+
+        std::vector<physx::TreeNode> nodes(total_nodes);
+
+        for (auto& tree : spatial_trees) {
+            for (int i = 0; i < tree.array_size; i++) {
+                m_access_manager->add_scatter_read(m_scatter_handle, tree.nodes_array + (i * sizeof(physx::TreeNode)), &nodes[i], sizeof(physx::TreeNode));
+            }
+        }
+        m_access_manager->scatter_read(m_scatter_handle);
+
+        std::vector<physx::NodeGeometry> geometries(total_nodes);
+
+        for (int i = 0; i < total_nodes; i++) {
+            if (nodes[i].child_or_leaf == -1 && nodes[i].geometry_ptr) {
+                m_access_manager->add_scatter_read(m_scatter_handle, nodes[i].geometry_ptr, &geometries[i], sizeof(geometries[i]));
+            }
+        }
+        m_access_manager->scatter_read(m_scatter_handle);
+
+        std::vector<physx::ConvexHull> hulls(total_nodes);
+        std::vector<physx::TriangleMesh> meshes(total_nodes);
+
+        for (int i = 0; i < total_nodes; i++) {
+            if (geometries[i].shape_ptr) {
+                m_access_manager->add_scatter_read(m_scatter_handle, geometries[i].shape_ptr, &hulls[i], sizeof(hulls[i]));
+            }
+            if (geometries[i].mesh_data) {
+                m_access_manager->add_scatter_read(m_scatter_handle, geometries[i].mesh_data, &meshes[i], sizeof(meshes[i]));
+            }
+        }
+        m_access_manager->scatter_read(m_scatter_handle);
+
+        std::vector<std::vector<Vector3>> all_hull_vertices(total_nodes);
+        std::vector<std::vector<Vector3>> all_mesh_vertices(total_nodes);
+        std::vector<std::vector<int>> all_mesh_indices(total_nodes);
+
+        for (int i = 0; i < total_nodes; i++) {
+            if (hulls[i].vertices_ptr && hulls[i].vertex_count > 2 && hulls[i].vertex_count < 10000) {
+                all_hull_vertices[i].resize(hulls[i].vertex_count);
+                for (int j = 0; j < hulls[i].vertex_count; j++) {
+                    uintptr_t vertex_addr = hulls[i].vertices_ptr + (j * sizeof(Vector3));
+                    m_access_manager->add_scatter_read(m_scatter_handle, vertex_addr, &all_hull_vertices[i][j], sizeof(Vector3));
+                }
             }
 
-            if (root_index < 0 || !nodes_array || array_size <= 0) {
-                logger::debug("Invalid tree " + std::to_string(tree_index) + " data, skipping");
-                continue;
+            if (meshes[i].vertices_ptr && meshes[i].vertex_count > 0 && meshes[i].vertex_count < 100000 &&
+                meshes[i].indices_ptr && meshes[i].triangle_count > 0 && meshes[i].triangle_count < 100000) {
+
+                all_mesh_vertices[i].resize(meshes[i].vertex_count);
+                for (int j = 0; j < meshes[i].vertex_count; j++) {
+                    uintptr_t vertex_addr = meshes[i].vertices_ptr + (j * sizeof(Vector3));
+                    m_access_manager->add_scatter_read(m_scatter_handle, vertex_addr, &all_mesh_vertices[i][j], sizeof(Vector3));
+                }
+
+                all_mesh_indices[i].resize(meshes[i].triangle_count * 3);
+                for (int j = 0; j < meshes[i].triangle_count; j++) {
+                    uintptr_t triangle_base = meshes[i].indices_ptr + (j * 3 * sizeof(int));
+                    m_access_manager->add_scatter_read(m_scatter_handle, triangle_base, &all_mesh_indices[i][j * 3], 3 * sizeof(int));
+                }
+            }
+        }
+        m_access_manager->scatter_read(m_scatter_handle);
+
+        for (int i = 0; i < total_nodes; i++) {
+            if (!all_hull_vertices[i].empty()) {
+                const auto& vertices = all_hull_vertices[i];
+                for (int j = 1; j < vertices.size() - 1; j++) {
+                    m_triangles.emplace_back(vertices[0], vertices[j], vertices[j + 1], static_cast<uint32_t>(m_triangles.size()));
+                }
             }
 
-            std::vector<int> current_nodes;
-            std::vector<int> next_nodes;
-            std::unordered_set<int> visited;
-            
-            current_nodes.push_back(root_index);
+            if (!all_mesh_vertices[i].empty() && !all_mesh_indices[i].empty()) {
+                const auto& vertices = all_mesh_vertices[i];
+                const auto& indices = all_mesh_indices[i];
 
-            while (!current_nodes.empty()) {
-                next_nodes.clear();
+                for (int j = 0; j < meshes[i].triangle_count; j++) {
+                    int idx1 = indices[j * 3 + 0];
+                    int idx2 = indices[j * 3 + 1];
+                    int idx3 = indices[j * 3 + 2];
 
-                std::vector<physx::TreeNode> nodes(current_nodes.size());
-                for (size_t i = 0; i < current_nodes.size(); i++) {
-                    int node_index = current_nodes[i];
-                    if (node_index < 0 || node_index >= array_size || visited.count(node_index)) {
-                        continue;
-                    }
-                    
-                    uintptr_t node_ptr = nodes_array + (node_index * sizeof(physx::TreeNode));
-                    m_access_manager->add_scatter_read(m_scatter_handle, node_ptr, &nodes[i], sizeof(physx::TreeNode));
-                }
-                
-                if (!m_access_manager->scatter_read(m_scatter_handle)) {
-                    logger::debug("Failed to read node batch for tree " + std::to_string(tree_index));
-                    break;
-                }
+                    if (idx1 >= 0 && idx1 < static_cast<int>(vertices.size()) &&
+                        idx2 >= 0 && idx2 < static_cast<int>(vertices.size()) &&
+                        idx3 >= 0 && idx3 < static_cast<int>(vertices.size())) {
 
-                std::vector<uintptr_t> geometry_addresses;
-                for (size_t i = 0; i < current_nodes.size(); i++) {
-                    int node_index = current_nodes[i];
-                    if (node_index < 0 || node_index >= array_size || visited.count(node_index)) {
-                        continue;
-                    }
-                    
-                    visited.insert(node_index);
-                    const physx::TreeNode& node = nodes[i];
-
-                    if (node.child_or_leaf == -1) {
-                        if (node.geometry_ptr) {
-                            geometry_addresses.push_back(node.geometry_ptr);
-                        }
-                    } else {
-                        next_nodes.push_back(node.child_or_leaf);
-                        if (node.sibling_index >= 0 && node.sibling_index < array_size) {
-                            next_nodes.push_back(node.sibling_index);
-                        }
+                        m_triangles.emplace_back(
+                            vertices[idx1],
+                            vertices[idx2],
+                            vertices[idx3],
+                            static_cast<uint32_t>(m_triangles.size())
+                        );
                     }
                 }
-
-                if (!geometry_addresses.empty()) {
-                    std::vector<physx::NodeGeometry> geometries(geometry_addresses.size());
-                    for (size_t i = 0; i < geometry_addresses.size(); i++) {
-                        m_access_manager->add_scatter_read(m_scatter_handle, geometry_addresses[i], &geometries[i], sizeof(physx::NodeGeometry));
-                    }
-                    
-                    if (m_access_manager->scatter_read(m_scatter_handle)) {
-                        for (const auto& geometry : geometries) {
-                            process_geometry_convex_hulls(geometry);
-                            process_geometry_triangle_meshes(geometry);
-                        }
-                    }
-                }
-
-                current_nodes = std::move(next_nodes);
             }
         }
 
@@ -239,119 +264,8 @@ void WorldCache::load_world_triangles() {
             m_traceline_manager->rebuild(m_triangles);
         }
 
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e) {
         logger::error("Exception in load_world_triangles: " + std::string(e.what()));
-    }
-}
-
-void WorldCache::process_geometry_convex_hulls(const physx::NodeGeometry& geometry) {
-    if (!geometry.shape_ptr) {
-        return;
-    }
-
-    try {
-        physx::ConvexHull hull;
-        m_access_manager->add_scatter_read(m_scatter_handle, geometry.shape_ptr, &hull, sizeof(hull));
-        if (!m_access_manager->scatter_read(m_scatter_handle)) {
-            return;
-        }
-
-        if (!hull.vertices_ptr || hull.vertex_count <= 2 || hull.vertex_count >= 10000) {
-            return;
-        }
-
-        std::vector<Vector3> vertices(hull.vertex_count);
-        const size_t batch_size = 50;
-        
-        for (int start = 0; start < hull.vertex_count; start += batch_size) {
-            int end = std::min<int>(start + static_cast<int>(batch_size), hull.vertex_count);
-            int count = end - start;
-            
-            for (int i = 0; i < count; i++) {
-                uintptr_t vertex_addr = hull.vertices_ptr + ((start + i) * sizeof(Vector3));
-                m_access_manager->add_scatter_read(m_scatter_handle, vertex_addr, &vertices[start + i], sizeof(Vector3));
-            }
-            
-            if (!m_access_manager->scatter_read(m_scatter_handle)) {
-                return;
-            }
-        }
-
-        for (int i = 1; i < vertices.size() - 1; i++) {
-            m_triangles.emplace_back(vertices[0], vertices[i], vertices[i + 1], static_cast<uint32_t>(m_triangles.size()));
-        }
-
-    } catch (const std::exception& e) {
-        logger::debug("Exception processing convex hull: " + std::string(e.what()));
-    }
-}
-
-void WorldCache::process_geometry_triangle_meshes(const physx::NodeGeometry& geometry) {
-    if (!geometry.mesh_data) {
-        return;
-    }
-
-    try {
-        physx::TriangleMesh mesh;
-        m_access_manager->add_scatter_read(m_scatter_handle, geometry.mesh_data, &mesh, sizeof(mesh));
-        if (!m_access_manager->scatter_read(m_scatter_handle)) {
-            return;
-        }
-
-        if (!mesh.vertices_ptr || mesh.vertex_count <= 0 ||
-            !mesh.indices_ptr || mesh.triangle_count <= 0 ||
-            mesh.vertex_count >= 100000 || mesh.triangle_count >= 100000) {
-            return;
-        }
-
-        std::vector<Vector3> vertices(mesh.vertex_count);
-        const size_t vertex_batch_size = 50;
-        
-        for (int start = 0; start < mesh.vertex_count; start += vertex_batch_size) {
-            int end = std::min<int>(start + static_cast<int>(vertex_batch_size), mesh.vertex_count);
-            int count = end - start;
-            
-            for (int i = 0; i < count; i++) {
-                uintptr_t vertex_addr = mesh.vertices_ptr + ((start + i) * sizeof(Vector3));
-                m_access_manager->add_scatter_read(m_scatter_handle, vertex_addr, &vertices[start + i], sizeof(Vector3));
-            }
-            
-            if (!m_access_manager->scatter_read(m_scatter_handle)) {
-                return;
-            }
-        }
-
-        std::vector<int> indices(mesh.triangle_count * 3);
-        const size_t index_batch_size = 50;
-        
-        for (int start = 0; start < mesh.triangle_count; start += index_batch_size) {
-            int end = std::min<int>(start + static_cast<int>(index_batch_size), mesh.triangle_count);
-            int count = end - start;
-            
-            for (int i = 0; i < count; i++) {
-                int triangle_idx = start + i;
-                uintptr_t idx_addr = mesh.indices_ptr + (triangle_idx * 12);
-                m_access_manager->add_scatter_read(m_scatter_handle, idx_addr + 0, &indices[triangle_idx * 3 + 0], sizeof(int));
-                m_access_manager->add_scatter_read(m_scatter_handle, idx_addr + 4, &indices[triangle_idx * 3 + 1], sizeof(int));
-                m_access_manager->add_scatter_read(m_scatter_handle, idx_addr + 8, &indices[triangle_idx * 3 + 2], sizeof(int));
-            }
-            
-            if (!m_access_manager->scatter_read(m_scatter_handle)) {
-                return;
-            }
-        }
-
-        for (int i = 0; i < mesh.triangle_count; i++) {
-            int idx1 = indices[i * 3 + 0];
-            int idx2 = indices[i * 3 + 1];
-            int idx3 = indices[i * 3 + 2];
-
-            if (idx1 < vertices.size() && idx2 < vertices.size() && idx3 < vertices.size()) {
-                m_triangles.emplace_back(vertices[idx1], vertices[idx2], vertices[idx3], static_cast<uint32_t>(m_triangles.size()));
-            }
-        }
-
-    } catch (const std::exception& e) {
-        logger::debug("Exception processing triangle mesh: " + std::string(e.what()));
     }
 }

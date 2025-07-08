@@ -89,11 +89,13 @@ private:
     
     std::vector<FeaturePtr> m_features;
     
-    static constexpr double CACHE_UPDATE_INTERVAL_MS = 100.0;
+    static constexpr double WORLD_CACHE_UPDATE_INTERVAL_MS = 3000.0;
+    static constexpr double ENTITY_CACHE_UPDATE_INTERVAL_MS = 100.0;
     static constexpr double FRAME_UPDATE_INTERVAL_MS = 10.0;
     static constexpr double FEATURES_UPDATE_INTERVAL_MS = 10.0;
     
-    std::chrono::high_resolution_clock::time_point m_last_cache_update;
+    std::chrono::high_resolution_clock::time_point m_last_entity_cache_update;
+    std::chrono::high_resolution_clock::time_point m_last_world_cache_update;
     std::chrono::high_resolution_clock::time_point m_last_frame_update;
     std::chrono::high_resolution_clock::time_point m_last_features_update;
 

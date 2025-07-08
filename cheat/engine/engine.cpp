@@ -29,9 +29,6 @@ Engine::Engine()
     , m_main_menu(nullptr)
     , m_settings_manager(nullptr)
 {
-    auto now = std::chrono::high_resolution_clock::now();
-    m_last_cache_update = now;
-    m_last_features_update = now;
 }
 
 Engine::~Engine() {
@@ -377,16 +374,16 @@ bool Engine::should_update_system(std::chrono::high_resolution_clock::time_point
 }
 
 void Engine::update_caches() {
-    if (!should_update_system(m_last_cache_update, CACHE_UPDATE_INTERVAL_MS)) {
-        return;
+    if (should_update_system(m_last_entity_cache_update, ENTITY_CACHE_UPDATE_INTERVAL_MS)) {
+        if (m_entity_cache) {
+            m_entity_cache->update();
+        }
     }
-    
-    if (m_entity_cache) {
-        m_entity_cache->update();
-    }
-    
-    if (m_world_cache) {
-        m_world_cache->update();
+
+    if (should_update_system(m_last_world_cache_update, WORLD_CACHE_UPDATE_INTERVAL_MS)) {
+        if (m_world_cache) {
+            m_world_cache->update();
+        }
     }
 }
 
