@@ -1,5 +1,6 @@
 #include <access/adapter/local/winapi_access.hpp>
 #include <logger/logger.hpp>
+
 #include <iostream>
 #include <algorithm>
 #include <cctype>
@@ -382,7 +383,6 @@ uint64_t WinApiAccess::get_process_base_address() {
         return 0;
     }
     
-    // Find the main module by looking for the first module (usually the exe)
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, m_process_id);
     if (snapshot == INVALID_HANDLE_VALUE) {
         return 0;
@@ -393,7 +393,6 @@ uint64_t WinApiAccess::get_process_base_address() {
     
     uint64_t base_address = 0;
     if (Module32FirstW(snapshot, &entry)) {
-        // The first module is typically the main executable
         base_address = reinterpret_cast<uint64_t>(entry.modBaseAddr);
     }
     

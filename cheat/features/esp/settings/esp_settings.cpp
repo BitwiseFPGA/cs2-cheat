@@ -1,4 +1,5 @@
 #include <features/esp/settings/esp_settings.hpp>
+
 #include <imgui.h>
 #include <vector>
 
@@ -185,6 +186,51 @@ void EspSettings::render_imgui() {
         if (ImGui::BeginTabItem("Smoke")) {
             ImGui::Checkbox("Enable Smoke ESP", &smoke.enabled);
             
+            if (smoke.enabled) {
+                ImGui::Separator();
+                
+                // 3D Cube rendering settings
+                ImGui::Text("3D Cube Settings:");
+                ImGui::SliderFloat("Cube Size", &smoke.cube_size, 5.0f, 50.0f, "%.1f");
+                ImGui::SliderFloat("Max Distance", &smoke.max_distance, 50.0f, 500.0f, "%.0fm");
+                ImGui::SliderFloat("Min Density", &smoke.min_density_threshold, 0.001f, 0.1f, "%.3f");
+                ImGui::SliderFloat("Max Opacity", &smoke.max_opacity, 0.1f, 1.0f, "%.2f");
+                ImGui::SliderFloat("Density Multiplier", &smoke.density_multiplier, 0.1f, 5.0f, "%.1f");
+                
+                ImGui::Separator();
+                
+                // Color settings
+                ImGui::Text("Color Settings:");
+                ImGui::Checkbox("Use Gradient Colors", &smoke.use_gradient_colors);
+                ImGui::ColorEdit4("Low Density Color", (float*)&smoke.low_density_color);
+                if (smoke.use_gradient_colors) {
+                    ImGui::ColorEdit4("High Density Color", (float*)&smoke.high_density_color);
+                }
+                
+                ImGui::Separator();
+                
+                // Edge settings
+                ImGui::Text("Edge Settings:");
+                ImGui::Checkbox("Show Edges", &smoke.show_edges);
+                if (smoke.show_edges) {
+                    ImGui::SliderFloat("Edge Thickness", &smoke.edge_thickness, 0.5f, 3.0f, "%.1f");
+                    ImGui::ColorEdit4("Edge Color", (float*)&smoke.edge_color);
+                }
+                
+                ImGui::Separator();
+                
+                // Rendering options
+                ImGui::Text("Rendering Options:");
+                ImGui::Checkbox("Distance Sorting", &smoke.distance_sorting);
+                ImGui::Checkbox("Cull by Distance", &smoke.cull_by_distance);
+                
+                ImGui::Separator();
+                
+                // Performance note
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Note: 3D smoke rendering may impact performance");
+                ImGui::Text("Reduce max distance or increase min density for better FPS");
+            }
+            
             ImGui::EndTabItem();
         }
         
@@ -239,6 +285,19 @@ void EspSettings::to_json(nlohmann::json& j) const {
     
     // Smoke settings
     j["smoke"]["enabled"] = smoke.enabled;
+    j["smoke"]["cube_size"] = smoke.cube_size;
+    j["smoke"]["max_distance"] = smoke.max_distance;
+    j["smoke"]["min_density_threshold"] = smoke.min_density_threshold;
+    j["smoke"]["max_opacity"] = smoke.max_opacity;
+    j["smoke"]["density_multiplier"] = smoke.density_multiplier;
+    j["smoke"]["use_gradient_colors"] = smoke.use_gradient_colors;
+    j["smoke"]["low_density_color"] = smoke.low_density_color;
+    j["smoke"]["high_density_color"] = smoke.high_density_color;
+    j["smoke"]["show_edges"] = smoke.show_edges;
+    j["smoke"]["edge_thickness"] = smoke.edge_thickness;
+    j["smoke"]["edge_color"] = smoke.edge_color;
+    j["smoke"]["distance_sorting"] = smoke.distance_sorting;
+    j["smoke"]["cull_by_distance"] = smoke.cull_by_distance;
 }
 
 void EspSettings::from_json(const nlohmann::json& j) {
@@ -331,5 +390,24 @@ void EspSettings::from_json(const nlohmann::json& j) {
     if (j.contains("smoke")) {
         const auto& s = j["smoke"];
         if (s.contains("enabled")) smoke.enabled = s["enabled"];
+        if (s.contains("cube_size")) smoke.cube_size = s["cube_size"];
+        if (s.contains("max_distance")) smoke.max_distance = s["max_distance"];
+        if (s.contains("min_density_threshold")) smoke.min_density_threshold = s["min_density_threshold"];
+        if (s.contains("max_opacity")) smoke.max_opacity = s["max_opacity"];
+        if (s.contains("density_multiplier")) smoke.density_multiplier = s["density_multiplier"];
+        if (s.contains("use_gradient_colors")) smoke.use_gradient_colors = s["use_gradient_colors"];
+        if (s.contains("low_density_color") && s["low_density_color"].is_array() && s["low_density_color"].size() == 4) {
+            smoke.low_density_color = s["low_density_color"];
+        }
+        if (s.contains("high_density_color") && s["high_density_color"].is_array() && s["high_density_color"].size() == 4) {
+            smoke.high_density_color = s["high_density_color"];
+        }
+        if (s.contains("show_edges")) smoke.show_edges = s["show_edges"];
+        if (s.contains("edge_thickness")) smoke.edge_thickness = s["edge_thickness"];
+        if (s.contains("edge_color") && s["edge_color"].is_array() && s["edge_color"].size() == 4) {
+            smoke.edge_color = s["edge_color"];
+        }
+        if (s.contains("distance_sorting")) smoke.distance_sorting = s["distance_sorting"];
+        if (s.contains("cull_by_distance")) smoke.cull_by_distance = s["cull_by_distance"];
     }
 } 

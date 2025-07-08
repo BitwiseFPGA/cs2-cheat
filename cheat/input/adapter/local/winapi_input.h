@@ -1,5 +1,6 @@
 #pragma once
 #include <input/adapter/base_input.h>
+
 #include <unordered_map>
 
 class WinApiInput : public BaseInputAdapter {

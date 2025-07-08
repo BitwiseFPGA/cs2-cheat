@@ -1,8 +1,9 @@
+#include <engine/sdk/offsets/static/client_dll.hpp>
 #include <engine/cache/entity/entity_cache.hpp>
+#include <engine/sdk/offsets/static/offsets.hpp>
 #include <access/access.hpp>
 #include <logger/logger.hpp>
-#include <engine/sdk/offsets/static/client_dll.hpp>
-#include <engine/sdk/offsets/static/offsets.hpp>
+
 #include <algorithm>
 #include <cstring>
 
@@ -15,8 +16,9 @@ inline uint32_t fnv1a_32(const char* str) {
     return hash;
 }
 
-EntityCache::EntityCache(AccessManager* access_manager)
-    : m_access_manager(access_manager)
+EntityCache::EntityCache(AccessManager* access_manager, Engine* engine)
+    : m_engine(engine)
+    , m_access_manager(access_manager)
     , m_initialized(false)
     , m_last_update(std::chrono::milliseconds(0))
 {
@@ -400,7 +402,8 @@ void EntityCache::fetch_player_data(std::vector<Player*>& players_to_update) {
     for (auto* player : players_to_update) {
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
-            player->gamescene_node + 0x170 + 0x80, 
+            player->gamescene_node +
+                m_engine->get_offset_extractor()->get_offset("bone_array_offset"),
             &player->bone_array, 
             sizeof(player->bone_array)
         );
@@ -412,7 +415,8 @@ void EntityCache::fetch_player_data(std::vector<Player*>& players_to_update) {
         );
         m_access_manager->add_scatter_read(
             m_scatter_handle, 
-            player->clipping_weapon + 0x380, 
+            player->clipping_weapon + 
+                m_engine->get_offset_extractor()->get_offset("weapon_vdata_offset"),
             &player->weapon_vdata, 
             sizeof(player->weapon_vdata)
         );
@@ -463,22 +467,26 @@ void EntityCache::fetch_other_entity_data(const std::vector<GameEntity>& entitie
     }
 
     for (auto& smoke : smoke_entities_to_update) {
-        smoke.object_smoke_ptr = smoke.ptr + 0x1268;
+        smoke.object_smoke_ptr = smoke.ptr + 
+            m_engine->get_offset_extractor()->get_offset("smoke_object_offset");
         m_access_manager->add_scatter_read(
             m_scatter_handle,
-            smoke.object_smoke_ptr + 0xE8,
+            smoke.object_smoke_ptr + 
+                m_engine->get_offset_extractor()->get_offset("smoke_center_offset"),
             &smoke.smoke_center,
             sizeof(smoke.smoke_center)
         );
         m_access_manager->add_scatter_read(
             m_scatter_handle,
-            smoke.object_smoke_ptr + 0x70,
+            smoke.object_smoke_ptr +
+                m_engine->get_offset_extractor()->get_offset("smoke_voxel_grid_base_offset"),
             &smoke.voxel_grid_base,
             sizeof(smoke.voxel_grid_base)
         );
         m_access_manager->add_scatter_read(
             m_scatter_handle,
-            smoke.object_smoke_ptr + 0x100,
+            smoke.object_smoke_ptr + 
+                m_engine->get_offset_extractor()->get_offset("smoke_buffer_index_offset"),
             &smoke.buffer_index,
             sizeof(smoke.buffer_index)
         );
@@ -493,7 +501,9 @@ void EntityCache::fetch_other_entity_data(const std::vector<GameEntity>& entitie
         for (int chunk_idx = 0; chunk_idx < SmokeGrenade::NUM_CHUNKS; chunk_idx++) {
             m_access_manager->add_scatter_read(
                 m_scatter_handle,
-                smoke.GetOccupancyAddress(chunk_idx),
+                smoke.GetOccupancyAddress(
+                    m_engine->get_offset_extractor()->get_offset("smoke_occupancy_address_offset"),
+                    chunk_idx),
                 &occupancy_data[smoke_idx][chunk_idx],
                 sizeof(uint64_t)
             );
@@ -519,7 +529,9 @@ void EntityCache::fetch_other_entity_data(const std::vector<GameEntity>& entitie
                 uint32_t voxel_index = occupied_voxels[smoke_idx][voxel_idx];
                 m_access_manager->add_scatter_read(
                     m_scatter_handle,
-                    smoke.GetDensityAddress(voxel_index),
+                    smoke.GetDensityAddress(
+                        m_engine->get_offset_extractor()->get_offset("smoke_density_address_offset"),
+                        voxel_index),
                     &density_data[smoke_idx][voxel_idx],
                     sizeof(float)
                 );

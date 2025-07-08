@@ -1,6 +1,7 @@
 #pragma once
 #include <logger/logger.hpp>
 #include <access/adapter/base_access.hpp>
+
 #include <string>
 #include <memory>
 #include <cstdint>
@@ -78,6 +79,43 @@ public:
         return m_adapter ? m_adapter->scatter_write(handle) : false;
     }
 
+    uintptr_t find_pattern(uintptr_t module_base, const std::string& pattern, const size_t max_size = 0xFFFFFFFF);
+
+    template<typename T>
+    T find_pattern_and_extract(uintptr_t module_base, const std::string& pattern, size_t offset_position, size_t offset_size = sizeof(T), const size_t max_size = 0xFFFFFFFF) {
+        uintptr_t pattern_address = find_pattern(module_base, pattern, max_size);
+        if (pattern_address == 0) {
+            logger::error("Pattern not found for offset extraction");
+            return T{};
+        }
+        
+        T value = extract_offset<T>(pattern_address, offset_position, offset_size);
+        return value;
+    }
+
+    uintptr_t find_pattern_and_extract_relative(uintptr_t module_base, const std::string& pattern, 
+                                               size_t offset_position, size_t instruction_length, 
+                                               const size_t max_size = 0xFFFFFFFF) {
+        uintptr_t pattern_address = find_pattern(module_base, pattern, max_size);
+        if (pattern_address == 0) {
+            logger::error("Pattern not found for relative address extraction");
+            return 0;
+        }
+        
+        return extract_relative_address(pattern_address, offset_position, instruction_length);
+    }
+
+    template<typename T>
+    T extract_offset(uintptr_t address, size_t offset_position, size_t offset_size = sizeof(T)) {
+        T value{};
+        if (m_adapter && read_memory(address + offset_position, &value, offset_size)) {
+            return value;
+        }
+        return T{};
+    }
+
+    uintptr_t extract_relative_address(uintptr_t instruction_address, size_t offset_position, size_t instruction_length);
+   
 private:
     std::unique_ptr<BaseMemoryAdapter> m_adapter;
 };

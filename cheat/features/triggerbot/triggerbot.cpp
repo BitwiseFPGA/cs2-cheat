@@ -8,6 +8,7 @@
 #include <engine/sdk/types/player.hpp>
 #include <engine/physics/traceline.hpp>
 #include <logger/logger.hpp>
+
 #include <algorithm>
 #include <cmath>
 #include <cfloat>

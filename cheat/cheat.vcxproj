@@ -203,6 +203,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="access\adapter\base_access.cpp" />
+    <ClCompile Include="engine\sdk\offsets\methods\extractor.cpp" />
     <ClCompile Include="engine\sdk\types\smoke.cpp" />
     <ClCompile Include="features\triggerbot\settings\triggerbot_settings.cpp" />
     <ClCompile Include="features\triggerbot\triggerbot.cpp" />

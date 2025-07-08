@@ -1,5 +1,6 @@
 #include <engine/physics/traceline.hpp>
 #include <logger/logger.hpp>
+
 #include <algorithm>
 #include <cmath>
 

@@ -2,6 +2,8 @@
 #include <logger/logger.hpp>
 #include <features/base_feature.hpp>
 #include <engine/sdk/math/matrix.hpp>
+#include <engine/sdk/offsets/methods/extractor.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,6 +17,7 @@ class Renderer;
 class TracelineManager;
 class MainMenu;
 class SettingsManager;
+class OffsetExtractor;
 
 class Engine {
 public:
@@ -36,7 +39,8 @@ public:
     TracelineManager* get_traceline_manager() const { return m_traceline_manager.get(); }
     MainMenu* get_menu() const { return m_main_menu.get(); }
     SettingsManager* get_settings_manager() const { return m_settings_manager.get(); }
-    
+    OffsetExtractor* get_offset_extractor() const { return m_offset_extractor.get(); }
+
     void add_feature(FeaturePtr feature);
     template<typename T, typename... Args>
     void add_feature(Args&&... args) {
@@ -79,7 +83,7 @@ private:
     std::unique_ptr<WorldCache> m_world_cache;
     std::unique_ptr<Renderer> m_renderer;
     std::unique_ptr<TracelineManager> m_traceline_manager;
-    
+    std::unique_ptr<OffsetExtractor> m_offset_extractor;
     std::unique_ptr<MainMenu> m_main_menu;
     std::unique_ptr<SettingsManager> m_settings_manager;
     
@@ -104,6 +108,7 @@ private:
     bool initialize_renderer();
     bool initialize_menu_and_settings();
     bool initialize_features();
+    bool initialize_offset_extractor();
     
     void update_caches();
     void update_view();

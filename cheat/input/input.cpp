@@ -1,4 +1,4 @@
-#include "input.hpp"
+#include <input/input.hpp>
 #include <config/build/settings.hpp>
 #include <logger/logger.hpp>
 #include <input/adapter/local/winapi_input.h>

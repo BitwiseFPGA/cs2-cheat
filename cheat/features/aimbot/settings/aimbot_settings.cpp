@@ -1,5 +1,6 @@
 #include <features/aimbot/settings/aimbot_settings.hpp>
 #include <input/adapter/base_input.h>
+
 #include <imgui.h>
 #include <vector>
 #include <unordered_map>
@@ -11,11 +12,9 @@ void AimbotSettings::render_imgui() {
     if (enabled) {
         ImGui::Separator();
         
-        // Main Settings
         ImGui::Text("Main Settings:");
         ImGui::Checkbox("Use Aim Key", &aim_key_enabled);
         if (aim_key_enabled) {
-            // Create key name mapping
             static std::unordered_map<InputKey, std::string> key_names = {
                 {InputKey::MouseLeft, "Mouse Left"},
                 {InputKey::MouseRight, "Mouse Right"},

@@ -1,10 +1,11 @@
 #pragma once
+#include <config/build/settings.hpp>
+
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <chrono>
 #include <sstream>
-#include <iomanip>
-#include <config/build/settings.hpp>
 
 namespace logger {
     enum class LogLevel : int {

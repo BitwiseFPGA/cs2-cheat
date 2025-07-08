@@ -7,6 +7,7 @@
 #include <engine/sdk/types/player.hpp>
 #include <engine/physics/traceline.hpp>
 #include <logger/logger.hpp>
+
 #include <algorithm>
 #include <cmath>
 #include <cfloat>
@@ -296,6 +297,5 @@ void AimbotFeature::aim_at_screen_position(const Vector2& target_pos) {
     
     if (mouse_x != 0 || mouse_y != 0) {
         m_input_manager->move_mouse(mouse_x, mouse_y);
-        logger::debug("Aimbot: Moving mouse smoothly");
     }
 }

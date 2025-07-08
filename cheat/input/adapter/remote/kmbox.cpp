@@ -1,4 +1,4 @@
-#include "kmbox.hpp"
+#include <input/adapter/remote/kmbox.hpp>
 #include <logger/logger.hpp>
 
 KmBoxInput::KmBoxInput() : BaseInputAdapter(), m_connected(false) {

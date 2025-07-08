@@ -1,15 +1,18 @@
 #pragma once
 #include <logger/logger.hpp>
+#include <engine/engine.hpp>
 #include <engine/sdk/types/entity.hpp>
 #include <engine/sdk/types/player.hpp>
 #include <engine/sdk/types/smoke.hpp>
 #include <engine/sdk/math/matrix.hpp>
 #include <access/adapter/base_access.hpp>
+
 #include <vector>
 #include <memory>
 #include <unordered_map>
 #include <chrono>
 
+class Engine;
 class AccessManager;
 class AutoScatterSystem;
 
@@ -18,7 +21,7 @@ constexpr int MAX_PLAYERS = 64;
 
 class EntityCache {
 public:
-    EntityCache(AccessManager* access_manager);
+    EntityCache(AccessManager* access_manager, Engine* engine);
     ~EntityCache();
     
     bool initialize();
@@ -28,7 +31,6 @@ public:
     void update_frame();
     void clear();
     
-    // Getters
     std::vector<GameEntity>& get_entities() { return m_entities; }
     std::vector<Player>& get_players() { return m_players; }
     std::vector<SmokeGrenade>& get_smokes() { return m_smokes; }
@@ -48,6 +50,7 @@ private:
     void fetch_player_data(std::vector<Player*>& players_to_update);
     void fetch_other_entity_data(const std::vector<GameEntity>& entities);
     
+    Engine* m_engine;
     AccessManager* m_access_manager;
     bool m_initialized;
     
@@ -57,22 +60,18 @@ private:
 
     uintptr_t m_client_dll_base = 0;
 
-    // Global data
     uintptr_t m_local_player_ptr = 0;
     uintptr_t m_entity_list_ptr = 0;
     uintptr_t m_global_vars_ptr = 0;
     
-    // Entity data
     std::vector<uintptr_t> m_list_entries;
     std::vector<GameEntity> m_entities;
     std::vector<SmokeGrenade> m_smokes;
     std::vector<Player> m_players;
     
-    // Quick access pointers
     Player* m_local_player = nullptr;
     GameEntity* m_c4 = nullptr;
     
-    // Caching buffers
     std::unordered_map<uint64_t, GameEntity> m_entity_cache_buffer;
     std::unordered_map<uint64_t, Player> m_player_cache_buffer;
     std::vector<GameEntity> m_new_entities_buffer;

@@ -1,5 +1,6 @@
 #pragma once
 #include <engine/sdk/math/vector.hpp>
+
 #include <cstdint>
 
 struct Triangle {

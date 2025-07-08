@@ -10,10 +10,11 @@
 #include <features/triggerbot/triggerbot.hpp>
 #include <config/runtime/settings.hpp>
 #include <menu/main_menu.hpp>
+#include <engine/sdk/offsets/static/offsets.hpp>
+
 #include <thread>
 #include <chrono>
 #include <windows.h>
-#include "sdk/offsets/static/offsets.hpp"
 
 Engine::Engine() 
     : m_running(false)
@@ -24,6 +25,7 @@ Engine::Engine()
     , m_world_cache(nullptr)
     , m_renderer(nullptr)
     , m_traceline_manager(nullptr)
+    , m_offset_extractor(nullptr)
     , m_main_menu(nullptr)
     , m_settings_manager(nullptr)
 {
@@ -82,6 +84,12 @@ bool Engine::initialize() {
             logger::log_failure("Feature System");
             return false;
         }
+
+        logger::log_step("8/8", "Loading offset extractor");
+        if (!initialize_offset_extractor()) {
+            logger::log_failure("Offset Extractor");
+            return false;
+        }
         
         m_initialized = true;
         logger::success("Engine fully initialized and ready");
@@ -128,6 +136,10 @@ void Engine::shutdown() {
     
     if (m_entity_cache) {
         m_entity_cache.reset();
+    }
+
+    if (m_offset_extractor) {
+        m_offset_extractor.reset();
     }
     
     if (m_input_manager) {
@@ -229,10 +241,10 @@ bool Engine::initialize_input_system() {
 
 bool Engine::initialize_cache_system() {    
     try {
-        m_entity_cache = std::make_unique<EntityCache>(m_access_manager.get());
+        m_entity_cache = std::make_unique<EntityCache>(m_access_manager.get(), this);
         m_entity_cache->initialize();
         
-        m_world_cache = std::make_unique<WorldCache>(m_access_manager.get(), m_traceline_manager.get());
+        m_world_cache = std::make_unique<WorldCache>(m_access_manager.get(), m_traceline_manager.get(), this);
         m_world_cache->initialize();
 
         return true;
@@ -333,6 +345,20 @@ bool Engine::initialize_features() {
         return true;
     } catch (const std::exception& e) {
         logger::error("Failed to initialize features: " + std::string(e.what()));
+        return false;
+    }
+}
+
+bool Engine::initialize_offset_extractor() {
+    try {
+        m_offset_extractor = std::make_unique<OffsetExtractor>(m_access_manager.get());
+        if (!m_offset_extractor->extract_offsets()) {
+            logger::error("Failed to extract offsets");
+            return false;
+        }
+        return true;
+    } catch (const std::exception& e) {
+        logger::error("Failed to initialize offset extractor: " + std::string(e.what()));
         return false;
     }
 }

@@ -3,6 +3,7 @@
 #include <engine/sdk/math/vector.hpp>
 #include <engine/sdk/math/matrix.hpp>
 #include <engine/sdk/types/player.hpp>
+
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <vector>
@@ -96,10 +97,10 @@ namespace Drawing {
         float min_y = screen_points[0].y, max_y = screen_points[0].y;
         
         for (int i = 1; i < valid_points; i++) {
-            min_x = std::min(min_x, screen_points[i].x);
-            max_x = std::max(max_x, screen_points[i].x);
-            min_y = std::min(min_y, screen_points[i].y);
-            max_y = std::max(max_y, screen_points[i].y);
+            min_x = std::min<float>(min_x, screen_points[i].x);
+            max_x = std::max<float>(max_x, screen_points[i].x);
+            min_y = std::min<float>(min_y, screen_points[i].y);
+            max_y = std::max<float>(max_y, screen_points[i].y);
         }
 
         return ImRect(min_x, min_y, max_x, max_y);
@@ -242,12 +243,12 @@ namespace Drawing {
         });
 
         // Calculate colors based on density and settings
-        float alpha_base = std::min(density * density_multiplier * max_opacity, max_opacity);
+        float alpha_base = std::min<float>(density * density_multiplier * max_opacity, max_opacity);
         
         ImColor face_color;
         if (use_gradient_colors) {
             // Interpolate between low and high density colors based on density
-            float t = std::min(density * density_multiplier, 1.0f);
+            float t = std::min<float>(density * density_multiplier, 1.0f);
             face_color = ImColor(
                 low_density_color.Value.x * (1.0f - t) + high_density_color.Value.x * t,
                 low_density_color.Value.y * (1.0f - t) + high_density_color.Value.y * t,

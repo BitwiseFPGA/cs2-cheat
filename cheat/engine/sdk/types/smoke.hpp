@@ -1,8 +1,9 @@
 #pragma once
-#include <vector>
 #include <engine/sdk/math/vector.hpp>
 #include <engine/sdk/math/voxel.hpp>
 #include <engine/sdk/types/entity.hpp>
+
+#include <vector>
 
 class SmokeGrenade : public GameEntity {
 public:
@@ -23,15 +24,12 @@ public:
     std::vector<uint32_t> voxel_indices = {};
     std::vector<VoxelData> voxels = {};
 
-    // Address calculation methods
-    uintptr_t GetOccupancyAddress(int chunkIndex) const;
-    uintptr_t GetDensityAddress(uint32_t voxelIndex) const;
+    uintptr_t GetOccupancyAddress(uint32_t offset, int chunkIndex) const;
+    uintptr_t GetDensityAddress(uint32_t offset, uint32_t voxelIndex) const;
     
-    // Voxel processing methods
     std::vector<uint32_t> GetOccupiedVoxelIndices(const std::vector<uint64_t>& occupancy_data) const;
     void ProcessVoxelData(const std::vector<uint32_t>& voxel_indices, const std::vector<float>& densities);
     
-    // Coordinate transformation
     Vector3 VoxelIndexToWorldPos(Vector3 origin, uint32_t index);
 
 private:

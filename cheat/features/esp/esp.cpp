@@ -6,6 +6,7 @@
 #include <engine/engine.hpp>
 #include <engine/physics/traceline.hpp>
 #include <logger/logger.hpp>
+
 #include <algorithm>
 #include <string>
 
@@ -483,24 +484,76 @@ void EspFeature::RenderWorldEntities() {
 
 void EspFeature::RenderSmokes()
 {
+    if (!m_settings.smoke.enabled) {
+        return;
+    }
+
+    Player* local_player = m_entity_cache->get_local_player();
+    if (!local_player) {
+        return;
+    }
+
+    // Collect all voxels from all smokes with distance information
+    struct VoxelRenderInfo {
+        VoxelData voxel;
+        float distance_to_player;
+    };
+    
+    std::vector<VoxelRenderInfo> voxels_to_render;
+    
     for (auto& smoke : m_entity_cache->get_smokes()) {
-        Player* local_player = m_entity_cache->get_local_player();
-        if (local_player) {
-            float distance = smoke.smoke_center.distance_to(local_player->origin) * 0.1f;
+        float smoke_distance = smoke.smoke_center.distance_to(local_player->origin) * 0.1f;
+        
+        // Skip entire smoke if too far and distance culling is enabled
+        if (m_settings.smoke.cull_by_distance && smoke_distance > m_settings.smoke.max_distance) {
+            continue;
         }
 
         for (auto& voxel : smoke.voxels) {
-            Vector2 screen_pos;
-            if (!m_engine->world_to_screen(voxel.world_position, screen_pos)) {
+            // Skip voxels with density below threshold
+            if (voxel.density < m_settings.smoke.min_density_threshold) {
                 continue;
             }
 
-            m_renderer->get_draw_list()->AddCircleFilled(
-                ImVec2(screen_pos.x, screen_pos.y),
-                voxel.density,
-                ImColor(255, 255, 255, 255)
-            );
+            float voxel_distance = voxel.world_position.distance_to(local_player->origin) * 0.1f;
+            
+            // Skip voxels that are too far
+            if (m_settings.smoke.cull_by_distance && voxel_distance > m_settings.smoke.max_distance) {
+                continue;
+            }
+
+            voxels_to_render.push_back({voxel, voxel_distance});
         }
+    }
+
+    // Sort voxels by distance if enabled (back to front for proper alpha blending)
+    if (m_settings.smoke.distance_sorting) {
+        std::sort(voxels_to_render.begin(), voxels_to_render.end(), 
+                  [](const VoxelRenderInfo& a, const VoxelRenderInfo& b) {
+                      return a.distance_to_player > b.distance_to_player;
+                  });
+    }
+
+    // Render all voxels as 3D cubes
+    for (const auto& voxel_info : voxels_to_render) {
+        const VoxelData& voxel = voxel_info.voxel;
+        
+        Drawing::DrawVoxelCube(
+            m_renderer,
+            voxel.world_position,
+            m_settings.smoke.cube_size,
+            voxel.density,
+            m_engine,
+            m_settings.smoke.min_density_threshold,
+            m_settings.smoke.max_opacity,
+            m_settings.smoke.density_multiplier,
+            m_settings.smoke.use_gradient_colors,
+            m_settings.smoke.low_density_color,
+            m_settings.smoke.high_density_color,
+            m_settings.smoke.show_edges,
+            m_settings.smoke.edge_thickness,
+            m_settings.smoke.edge_color
+        );
     }
 }
 

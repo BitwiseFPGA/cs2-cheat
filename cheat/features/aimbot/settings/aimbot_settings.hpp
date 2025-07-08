@@ -1,6 +1,7 @@
 #pragma once
 #include <features/settings/base_settings.hpp>
 #include <input/adapter/base_input.h>
+
 #include <imgui.h>
 
 enum class AimbotBone {

@@ -1,5 +1,6 @@
 #pragma once
 #include <features/settings/base_settings.hpp>
+
 #include <imgui.h>
 
 enum class BOX_TYPE {
@@ -101,5 +102,26 @@ public:
     // Smoke ESP Settings
     struct SmokeSettings {
         bool enabled = true;
+        
+        // 3D Cube rendering settings
+        float cube_size = 20.0f; // Size of each voxel cube
+        float max_distance = 300.0f; // Maximum distance to render smoke
+        float min_density_threshold = 0.01f; // Minimum density to render
+        float max_opacity = 0.8f; // Maximum opacity for cubes
+        float density_multiplier = 1.0f; // Multiplier for density-based alpha
+        
+        // Color settings
+        bool use_gradient_colors = true;
+        ImColor low_density_color = ImColor(0.8f, 0.8f, 0.8f, 0.3f); // Light gray for low density
+        ImColor high_density_color = ImColor(0.3f, 0.3f, 0.3f, 0.8f); // Dark gray for high density
+        
+        // Edge settings
+        bool show_edges = true;
+        float edge_thickness = 1.0f;
+        ImColor edge_color = ImColor(0.5f, 0.5f, 0.5f, 0.6f); // Gray edges
+        
+        // Rendering options
+        bool distance_sorting = true; // Sort voxels by distance for proper rendering
+        bool cull_by_distance = true; // Don't render very far smoke
     } smoke;
 }; 

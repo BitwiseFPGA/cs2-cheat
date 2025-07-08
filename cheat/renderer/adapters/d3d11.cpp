@@ -276,7 +276,6 @@ bool D3D11Renderer::create_render_target() {
 bool D3D11Renderer::initialize_imgui() {
     logger::log_step("ImGui Init", "Setting up ImGui context and backends");
 
-    // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;

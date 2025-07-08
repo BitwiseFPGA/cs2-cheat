@@ -1,6 +1,7 @@
 #pragma once
 #include <logger/logger.hpp>
 #include <input/adapter/base_input.h>
+
 #include <string>
 #include <memory>
 

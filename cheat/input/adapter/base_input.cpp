@@ -1,4 +1,5 @@
-#include "base_input.h"
+#include <input/adapter/base_input.h>
+
 #include <cstring>
 
 BaseInputAdapter::BaseInputAdapter()

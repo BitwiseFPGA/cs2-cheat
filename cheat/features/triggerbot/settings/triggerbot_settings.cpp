@@ -1,5 +1,6 @@
 #include <features/triggerbot/settings/triggerbot_settings.hpp>
 #include <input/adapter/base_input.h>
+
 #include <imgui.h>
 #include <vector>
 #include <unordered_map>

@@ -1,4 +1,4 @@
-#include "smoke.hpp"
+#include <engine/sdk/types/smoke.hpp>
 
 Vector3 SmokeGrenade::DecodeMortonIndex(uint32_t index)
 {
@@ -34,14 +34,14 @@ Vector3 SmokeGrenade::VoxelIndexToWorldPos(Vector3 origin, uint32_t index)
     return worldPos;
 }
 
-uintptr_t SmokeGrenade::GetOccupancyAddress(int chunkIndex) const
+uintptr_t SmokeGrenade::GetOccupancyAddress(uint32_t offset, int chunkIndex) const
 {
-    return voxel_grid_base + 8 * (chunkIndex + (buffer_index << 9)) + 0x1008;
+    return voxel_grid_base + 8 * (chunkIndex + (buffer_index << 9)) + offset;
 }
 
-uintptr_t SmokeGrenade::GetDensityAddress(uint32_t voxelIndex) const
+uintptr_t SmokeGrenade::GetDensityAddress(uint32_t offset, uint32_t voxelIndex) const
 {
-    return voxel_grid_base + 16 * (voxelIndex + (buffer_index << 15)) + 0x3008;
+    return voxel_grid_base + 16 * (voxelIndex + (buffer_index << 15)) + offset;
 }
 
 std::vector<uint32_t> SmokeGrenade::GetOccupiedVoxelIndices(const std::vector<uint64_t>& occupancy_data) const

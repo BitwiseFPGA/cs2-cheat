@@ -4,6 +4,7 @@
 #include <features/base_feature.hpp>
 #include <features/aimbot/settings/aimbot_settings.hpp>
 #include <input/adapter/base_input.h>
+
 #include <memory>
 #include <vector>
 

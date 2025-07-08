@@ -1,17 +1,17 @@
 #pragma once
+#include <config/build/settings.hpp>
+#include <features/settings/base_settings.hpp>
+#include <logger/logger.hpp>
+
 #include <string>
 #include <memory>
 #include <vector>
 #include <fstream>
 #include <filesystem>
-#include <nlohmann/json.hpp>
-#include <imgui.h>
-#include <config/build/settings.hpp>
-#include <features/settings/base_settings.hpp>
-#include <logger/logger.hpp>
-
 #include <Windows.h>
 #include <ShlObj.h>
+#include <nlohmann/json.hpp>
+#include <imgui.h>
 
 namespace settings {
     inline bool g_show_menu = false;

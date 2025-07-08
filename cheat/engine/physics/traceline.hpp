@@ -1,6 +1,7 @@
 #pragma once
 #include <engine/sdk/math/vector.hpp>
 #include <engine/sdk/math/triangle.hpp>
+
 #include <memory>
 #include <vector>
 

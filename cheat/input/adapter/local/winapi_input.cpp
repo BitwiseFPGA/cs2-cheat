@@ -1,7 +1,8 @@
-#include "winapi_input.h"
+#include <input/adapter/local/winapi_input.h>
+#include <logger/logger.hpp>
+
 #include <thread>
 #include <chrono>
-#include <logger/logger.hpp>
 
 WinApiInput::WinApiInput() : BaseInputAdapter() {
 }

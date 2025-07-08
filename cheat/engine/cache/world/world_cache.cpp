@@ -2,9 +2,10 @@
 #include <access/access.hpp>
 #include <logger/logger.hpp>
 
-WorldCache::WorldCache(AccessManager* access_manager, TracelineManager* traceline_manager)
+WorldCache::WorldCache(AccessManager* access_manager, TracelineManager* traceline_manager, Engine* engine)
     : m_access_manager(access_manager)
     , m_traceline_manager(traceline_manager)
+    , m_engine(engine)
     , m_initialized(false)
 	, m_scatter_handle(nullptr)
     , m_last_update(std::chrono::milliseconds(0))
@@ -260,7 +261,7 @@ void WorldCache::process_geometry_convex_hulls(const physx::NodeGeometry& geomet
         }
 
         std::vector<Vector3> vertices(hull.vertex_count);
-        const size_t batch_size = 50; // Read 50 vertices at a time
+        const size_t batch_size = 50;
         
         for (int start = 0; start < hull.vertex_count; start += batch_size) {
             int end = std::min<int>(start + static_cast<int>(batch_size), hull.vertex_count);
