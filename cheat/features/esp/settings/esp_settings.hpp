@@ -90,7 +90,7 @@ public:
     // Map ESP Settings
     struct MapSettings {
         bool enabled = false;
-        bool show_triangles = false;
+        bool show_triangles = true;
         float triangle_alpha = 0.1f;
         float max_distance = 50.0f;
         bool wireframe_only = true;

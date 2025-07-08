@@ -168,7 +168,7 @@ void EspSettings::render_imgui() {
                     
                     ImGui::Checkbox("Wireframe Only", &map.wireframe_only);
                     ImGui::SliderFloat("Triangle Alpha", &map.triangle_alpha, 0.0f, 1.0f, "%.2f");
-                    ImGui::SliderFloat("Max Distance", &map.max_distance, 5.0f, 200.0f, "%.0fm");
+                    ImGui::SliderFloat("Max Distance", &map.max_distance, 5.0f, 10000.0f, "%.0fm");
                     
                     ImGui::Separator();
                     
