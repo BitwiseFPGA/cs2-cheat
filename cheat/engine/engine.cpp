@@ -11,6 +11,7 @@
 #include <config/runtime/settings.hpp>
 #include <menu/main_menu.hpp>
 #include <engine/sdk/offsets/static/offsets.hpp>
+#include <engine/sdk/offsets/static/client_dll.hpp>
 
 #include <thread>
 #include <chrono>
@@ -394,6 +395,14 @@ void Engine::update_view() {
 
     m_view_matrix = m_access_manager->read<Matrix4x4>(
         m_entity_cache->get_client_dll_base() + cs2_dumper::offsets::client_dll::dwViewMatrix
+    );
+
+    m_local_punch_angle = m_access_manager->read<Vector3>(
+        m_entity_cache->get_local_player_ptr() + cs2_dumper::schemas::client_dll::C_CSPlayerPawn::m_aimPunchAngle
+    );
+
+    m_shot_fired = m_access_manager->read<int>(
+        m_entity_cache->get_local_player_ptr() + cs2_dumper::schemas::client_dll::C_CSPlayerPawn::m_iShotsFired
     );
 
     if (should_update_system(m_last_frame_update, FRAME_UPDATE_INTERVAL_MS)) {

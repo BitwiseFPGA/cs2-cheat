@@ -70,6 +70,8 @@ public:
     }
     
     const Matrix4x4& get_view_matrix() const { return m_view_matrix; }
+    const Vector3& get_local_punch_angle() const { return m_local_punch_angle; }
+	const int& get_shot_fired() const { return m_shot_fired; }
 
     bool world_to_screen(const Vector3& world_pos, Vector2& screen_pos) const;
 
@@ -100,7 +102,9 @@ private:
     std::chrono::high_resolution_clock::time_point m_last_features_update;
 
     Matrix4x4 m_view_matrix = {};
-    
+    Vector3 m_local_punch_angle = Vector3(0.0f, 0.0f, 0.0f);
+	int m_shot_fired = 0;
+
     bool should_update_system(std::chrono::high_resolution_clock::time_point& last_update, double interval_ms);
     
     bool initialize_access_system();

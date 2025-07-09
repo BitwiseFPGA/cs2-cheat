@@ -625,6 +625,7 @@ void EntityCache::update_frame() {
            m_local_player = &player;
        }
     }
+
     m_access_manager->scatter_read(m_scatter_handle);
 
     for (auto& player : m_players) {

@@ -44,6 +44,7 @@ private:
     // Movement accumulation for precise smoothing
     float m_movement_remainder_x;
     float m_movement_remainder_y;
+    Vector3 m_old_punch_angle; // Store previous punch angle for recoil control
     
     // Helper methods
     bool should_aim() const;

@@ -211,22 +211,26 @@ void AimbotFeature::render() {
     if (!is_feature_enabled() || !m_initialized) {
         return;
     }
-    
+
     if (m_settings.show_fov_circle) {
-        m_renderer->draw_circle(m_renderer->get_screen_center(), m_settings.fov, m_settings.fov_circle_color, 0, 2.0f);
+        Vector3 punch_angle = m_engine->get_local_punch_angle();
+        int shots_fired = m_engine->get_shot_fired();
+
+        auto target = m_renderer->get_screen_center();
+
+        if (shots_fired > 1) {
+            Vector2 recoil_end = Vector2(
+                -(punch_angle.y) * 14.0f,
+                (punch_angle.x) * 14.0f
+            );
+            target += recoil_end;
+        }
+        m_renderer->draw_circle(target, m_settings.fov, m_settings.fov_circle_color, 0, 2.0f);
     }
     
     if (m_has_target) {
         m_renderer->draw_circle(m_target_position, 8.0f, ImColor(255, 0, 0, 255), 0, 2.0f);
         m_renderer->draw_circle(m_target_position, 4.0f, ImColor(255, 255, 255, 255), 0, 1.0f);
-        
-        if (m_settings.show_target_info) {
-            std::string target_info = "TARGET";
-            if (m_current_target_distance > 0) {
-                target_info += " [" + std::to_string(static_cast<int>(m_current_target_distance)) + "m]";
-            }
-            m_renderer->draw_text(m_target_position + Vector2(15, -5), target_info, ImColor(255, 255, 255, 255));
-        }
         
         if (m_settings.show_aim_line && should_aim()) {
             Vector2 center = m_renderer->get_screen_center();
@@ -241,7 +245,23 @@ void AimbotFeature::process_input() {
     }
     
     if (should_aim() && m_has_target) {
-        aim_at_screen_position(m_target_position);
+        Vector2 compensated_target = m_target_position;
+        
+        if (m_settings.rcs_enabled) {
+            Vector3 punch_angle = m_engine->get_local_punch_angle();
+            int shots_fired = m_engine->get_shot_fired();
+            
+            if (shots_fired > 1) {
+                Vector2 recoil_offset = Vector2(
+                    -(punch_angle.y) * 14.0f,
+                    (punch_angle.x) * 14.0f
+                );
+                
+                compensated_target = m_target_position - recoil_offset;
+            }
+        }
+        
+        aim_at_screen_position(compensated_target);
     } else {
         m_movement_remainder_x = 0.0f;
         m_movement_remainder_y = 0.0f;

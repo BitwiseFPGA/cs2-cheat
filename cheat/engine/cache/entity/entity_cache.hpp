@@ -34,8 +34,8 @@ public:
     std::vector<GameEntity>& get_entities() { return m_entities; }
     std::vector<Player>& get_players() { return m_players; }
     std::vector<SmokeGrenade>& get_smokes() { return m_smokes; }
-    Player* get_local_player() { return m_local_player; }
 
+    Player* get_local_player() { return m_local_player; }
     GameEntity* get_c4() { return m_c4; }
 
     uintptr_t get_client_dll_base() const { return m_client_dll_base; }

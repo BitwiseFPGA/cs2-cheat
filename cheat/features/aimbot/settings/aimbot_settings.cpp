@@ -84,10 +84,7 @@ void AimbotSettings::render_imgui() {
         // Smoothing
         ImGui::Text("Smoothing:");
         ImGui::SliderFloat("Smooth", &smooth, 1.0f, 10.0f, "%.1f");
-        //ImGui::Checkbox("Recoil Control System", &rcs_enabled);
-        //if (rcs_enabled) {
-        //    ImGui::SliderFloat("RCS Scale", &rcs_scale, 0.1f, 5.0f, "%.1f");
-        //}
+        ImGui::Checkbox("Recoil Control System", &rcs_enabled);
         
         ImGui::Separator();
         
@@ -97,7 +94,6 @@ void AimbotSettings::render_imgui() {
         if (show_fov_circle) {
             ImGui::ColorEdit4("FOV Circle Color", (float*)&fov_circle_color);
         }
-        ImGui::Checkbox("Show Target Info", &show_target_info);
         ImGui::Checkbox("Show Aim Line", &show_aim_line);
     }
 }
@@ -126,13 +122,11 @@ void AimbotSettings::to_json(nlohmann::json& j) const {
     // Smoothing
     j["smooth"] = smooth;
     j["rcs_enabled"] = rcs_enabled;
-    j["rcs_scale"] = rcs_scale;
     
     // Visual feedback
     j["show_fov_circle"] = show_fov_circle;
     std::vector<float> fov_color_vec = {fov_circle_color.Value.x, fov_circle_color.Value.y, fov_circle_color.Value.z, fov_circle_color.Value.w};
     j["fov_circle_color"] = fov_color_vec;
-    j["show_target_info"] = show_target_info;
     j["show_aim_line"] = show_aim_line;
 }
 
@@ -160,7 +154,6 @@ void AimbotSettings::from_json(const nlohmann::json& j) {
     // Smoothing
     if (j.contains("smooth")) smooth = j["smooth"];
     if (j.contains("rcs_enabled")) rcs_enabled = j["rcs_enabled"];
-    if (j.contains("rcs_scale")) rcs_scale = j["rcs_scale"];
     
     // Visual feedback
     if (j.contains("show_fov_circle")) show_fov_circle = j["show_fov_circle"];
@@ -170,6 +163,5 @@ void AimbotSettings::from_json(const nlohmann::json& j) {
         fov_circle_color.Value.z = static_cast<float>(j["fov_circle_color"][2]);
         fov_circle_color.Value.w = static_cast<float>(j["fov_circle_color"][3]);
     }
-    if (j.contains("show_target_info")) show_target_info = j["show_target_info"];
     if (j.contains("show_aim_line")) show_aim_line = j["show_aim_line"];
 } 

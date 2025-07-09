@@ -41,13 +41,11 @@ public:
     float max_distance = 300.0f;
     
     // Smoothing
-    float smooth = 1.0f;
-    bool rcs_enabled = false;
-    float rcs_scale = 2.0f;
+    float smooth = 4.0f;
+    bool rcs_enabled = true;
     
     // Visual feedback
     bool show_fov_circle = true;
     ImColor fov_circle_color = ImColor(1.0f, 1.0f, 1.0f, 0.5f);
-    bool show_target_info = true;
-    bool show_aim_line = true;
+    bool show_aim_line = false;
 }; 
