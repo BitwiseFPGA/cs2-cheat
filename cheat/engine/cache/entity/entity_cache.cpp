@@ -220,16 +220,10 @@ void EntityCache::fetch_entities() {
     
     for (size_t i = 0; i < player_controllers.size(); ++i) {
         const auto& entity = *player_controllers[i];
-        uint64_t key = make_key(entity.list_entry, entity.idx);
         
-        auto it = m_player_cache_buffer.find(key);
-        if (it != m_player_cache_buffer.end() && it->second.pawn == current_pawn_handles[i]) {
-            m_new_players_buffer.push_back(it->second);
-        } else {
-            auto& player = m_new_players_buffer.emplace_back(entity);
-            player.pawn = current_pawn_handles[i];
-            m_players_to_update_buffer.push_back(&player);
-        }
+        auto& player = m_new_players_buffer.emplace_back(entity);
+        player.pawn = current_pawn_handles[i];
+        m_players_to_update_buffer.push_back(&player);
     }
 
     if (!m_players_to_update_buffer.empty()) {
