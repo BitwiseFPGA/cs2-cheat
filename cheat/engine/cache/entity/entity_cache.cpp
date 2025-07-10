@@ -88,7 +88,14 @@ void EntityCache::update() {
     try {
         fetch_globals();
         fetch_entities();
-        fetch_other_entity_data(m_entities);
+
+		// TODO - Fix this bullshit
+		static int cycle_count = 0;
+		if (cycle_count++ % 4 == 0) {
+            fetch_other_entity_data(m_entities);  
+			cycle_count = 0;
+        }
+
 		update_frame();
 
         m_last_update = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -458,7 +465,6 @@ void EntityCache::fetch_other_entity_data(const std::vector<GameEntity>& entitie
     }
 
     if (smoke_entities_to_update.empty()) {
-        // Clear smoke scene if no smokes
         if (m_engine && m_engine->get_traceline_manager()) {
             m_engine->get_traceline_manager()->clear_smoke_scene();
         }

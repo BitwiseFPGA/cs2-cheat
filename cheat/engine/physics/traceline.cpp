@@ -160,22 +160,21 @@ bool TracelineManager::create_world_scene() {
 bool TracelineManager::create_smoke_scene() {
     if (!m_device || m_smoke_voxels.empty()) {
         cleanup_smoke_resources();
-        return true; // Empty smoke scene is valid
+        return true;
     }
     
     cleanup_smoke_resources();
     
-    // Generate cube triangles for each voxel
     std::vector<Triangle> smoke_triangles;
     for (const auto& voxel : m_smoke_voxels) {
-        if (voxel.has_smoke && voxel.density > 0.01f) { // Only include voxels with meaningful density
-            auto cube_triangles = generate_voxel_cube_triangles(voxel.world_position, 20.0f); // 20 unit cube size
+        if (voxel.has_smoke && voxel.density > 0.01f) {
+            auto cube_triangles = generate_voxel_cube_triangles(voxel.world_position, 20.0f);
             smoke_triangles.insert(smoke_triangles.end(), cube_triangles.begin(), cube_triangles.end());
         }
     }
     
     if (smoke_triangles.empty()) {
-        return true; // No smoke geometry to create
+        return true;
     }
     
     m_smoke_scene = rtcNewScene(m_device);
@@ -237,7 +236,6 @@ std::vector<Triangle> TracelineManager::generate_voxel_cube_triangles(const Vect
     std::vector<Triangle> triangles;
     float half_size = size * 0.5f;
     
-    // Define the 8 vertices of a cube
     Vector3 vertices[8] = {
         Vector3(center.x - half_size, center.y - half_size, center.z - half_size), // 0: front-bottom-left
         Vector3(center.x + half_size, center.y - half_size, center.z - half_size), // 1: front-bottom-right
@@ -281,9 +279,7 @@ void TracelineManager::rebuild_world_scene(std::vector<Triangle>& new_triangles)
     if (!m_initialized) {
         return;
     }
-    
-    logger::debug("Rebuilding world scene for traceline");
-    
+        
     m_world_triangles = new_triangles;
     
     if (!create_world_scene()) {
@@ -295,9 +291,7 @@ void TracelineManager::rebuild_smoke_scene(const std::vector<VoxelData>& voxels)
     if (!m_initialized) {
         return;
     }
-    
-    logger::debug("Rebuilding smoke scene for traceline with " + std::to_string(voxels.size()) + " voxels");
-    
+        
     m_smoke_voxels = voxels;
     
     if (!create_smoke_scene()) {
@@ -309,16 +303,14 @@ void TracelineManager::clear_smoke_scene() {
     if (!m_initialized) {
         return;
     }
-    
-    logger::debug("Clearing smoke scene for traceline");
-    
+        
     m_smoke_voxels.clear();
     cleanup_smoke_resources();
 }
 
 bool TracelineManager::is_visible_world_only(const Vector3& start, const Vector3& end) const {
     if (!m_initialized || !m_world_scene) {
-        return true; // No world geometry means no obstruction
+        return true;
     }
     
     Vector3 direction = end - start;
@@ -351,7 +343,7 @@ bool TracelineManager::is_visible_world_only(const Vector3& start, const Vector3
 
 bool TracelineManager::is_visible_smoke_only(const Vector3& start, const Vector3& end) const {
     if (!m_initialized || !m_smoke_scene) {
-        return true; // No smoke geometry means no obstruction
+        return true;
     }
     
     Vector3 direction = end - start;
@@ -387,17 +379,14 @@ bool TracelineManager::is_visible(const Vector3& start, const Vector3& end) cons
         return true;
     }
     
-    // Check world geometry first (most common obstruction)
     if (!is_visible_world_only(start, end)) {
         return false;
     }
     
-    // If world doesn't block, check smoke
     if (!is_visible_smoke_only(start, end)) {
         return false;
     }
     
-    // Both world and smoke are clear
     return true;
 }
 
