@@ -9,93 +9,97 @@
 void AimbotSettings::render_imgui() {
     ImGui::Checkbox("Enable Aimbot", &enabled);
     
-    if (enabled) {
-        ImGui::Separator();
-        
-        ImGui::Text("Main Settings:");
-        ImGui::Checkbox("Use Aim Key", &aim_key_enabled);
-        if (aim_key_enabled) {
-            static std::unordered_map<InputKey, std::string> key_names = {
-                {InputKey::MouseLeft, "Mouse Left"},
-                {InputKey::MouseRight, "Mouse Right"},
-                {InputKey::MouseMiddle, "Mouse Middle"},
-                {InputKey::MouseX1, "Mouse X1"},
-                {InputKey::MouseX2, "Mouse X2"},
-                {InputKey::Shift, "Shift"},
-                {InputKey::Ctrl, "Ctrl"},
-                {InputKey::Alt, "Alt"},
-                {InputKey::Space, "Space"},
-                {InputKey::F1, "F1"}, {InputKey::F2, "F2"}, {InputKey::F3, "F3"},
-                {InputKey::F4, "F4"}, {InputKey::F5, "F5"}, {InputKey::F6, "F6"}
-            };
-            
-            std::string current_key_name = "Unknown";
-            if (key_names.find(aim_key) != key_names.end()) {
-                current_key_name = key_names[aim_key];
-            }
-            
-            if (ImGui::BeginCombo("Aim Key", current_key_name.c_str())) {
-                for (const auto& [key, name] : key_names) {
-                    bool is_selected = (aim_key == key);
-                    if (ImGui::Selectable(name.c_str(), is_selected)) {
-                        aim_key = key;
-                    }
-                    if (is_selected) {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                }
-                ImGui::EndCombo();
-            }
-        }
-        
-        ImGui::Separator();
-        
-        // Target Selection
-        ImGui::Text("Target Selection:");
-        ImGui::Checkbox("Multi-Bone Targeting", &multi_bone_enabled);
-        
-        if (multi_bone_enabled) {
-            ImGui::Text("Select Target Bones:");
-            ImGui::Checkbox("Head", &target_head);
-            ImGui::Checkbox("Neck", &target_neck);
-            ImGui::Checkbox("Chest", &target_chest);
-            ImGui::Checkbox("Spine", &target_spine);
-            ImGui::Checkbox("Hip", &target_hip);
-        } else {
-            ImGui::Text("Primary Target Bone:");
-            static const char* bone_names[] = { "Head", "Neck", "Chest", "Spine", "Hip" };
-            int current_bone = static_cast<int>(target_bone);
-            if (ImGui::Combo("Target Bone", &current_bone, bone_names, IM_ARRAYSIZE(bone_names))) {
-                target_bone = static_cast<AimbotBone>(current_bone);
-            }
-        }
-        
-        ImGui::Separator();
-        
-        // Filtering
-        ImGui::Text("Filtering:");
-        ImGui::Checkbox("Visible Only", &visible_only);
-        ImGui::Checkbox("Team Check", &team_check);
-        ImGui::SliderFloat("FOV", &fov, 10.0f, 180.0f, "%.1f°");
-        ImGui::SliderFloat("Max Distance", &max_distance, 50.0f, 1000.0f, "%.0fm");
-        
-        ImGui::Separator();
-        
-        // Smoothing
-        ImGui::Text("Smoothing:");
-        ImGui::SliderFloat("Smooth", &smooth, 1.0f, 10.0f, "%.1f");
-        ImGui::Checkbox("Recoil Control System", &rcs_enabled);
-        
-        ImGui::Separator();
-        
-        // Visual Feedback
-        ImGui::Text("Visual Feedback:");
-        ImGui::Checkbox("Show FOV Circle", &show_fov_circle);
-        if (show_fov_circle) {
-            ImGui::ColorEdit4("FOV Circle Color", (float*)&fov_circle_color);
-        }
-        ImGui::Checkbox("Show Aim Line", &show_aim_line);
+    if (!enabled) {
+        return;
     }
+    
+    ImGui::Separator();
+    
+    // Main Settings Section
+    ImGui::Text("Main Settings:");
+    ImGui::Checkbox("Use Aim Key", &aim_key_enabled);
+    
+    if (aim_key_enabled) {
+        static std::unordered_map<InputKey, std::string> key_names = {
+            {InputKey::MouseLeft, "Mouse Left"},
+            {InputKey::MouseRight, "Mouse Right"},
+            {InputKey::MouseMiddle, "Mouse Middle"},
+            {InputKey::MouseX1, "Mouse X1"},
+            {InputKey::MouseX2, "Mouse X2"},
+            {InputKey::Shift, "Shift"},
+            {InputKey::Ctrl, "Ctrl"},
+            {InputKey::Alt, "Alt"},
+            {InputKey::Space, "Space"},
+            {InputKey::F1, "F1"}, {InputKey::F2, "F2"}, {InputKey::F3, "F3"},
+            {InputKey::F4, "F4"}, {InputKey::F5, "F5"}, {InputKey::F6, "F6"}
+        };
+        
+        std::string current_key_name = "Unknown";
+        if (key_names.find(aim_key) != key_names.end()) {
+            current_key_name = key_names[aim_key];
+        }
+        
+        if (ImGui::BeginCombo("Aim Key", current_key_name.c_str())) {
+            for (const auto& [key, name] : key_names) {
+                bool is_selected = (aim_key == key);
+                if (ImGui::Selectable(name.c_str(), is_selected)) {
+                    aim_key = key;
+                }
+                if (is_selected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+    }
+    
+    ImGui::Separator();
+    
+    // Target Selection Section
+    ImGui::Text("Target Selection:");
+    ImGui::Checkbox("Multi-Bone Targeting", &multi_bone_enabled);
+    
+    if (multi_bone_enabled) {
+        ImGui::Text("Select Target Bones:");
+        ImGui::Checkbox("Head", &target_head);
+        ImGui::Checkbox("Neck", &target_neck);
+        ImGui::Checkbox("Chest", &target_chest);
+        ImGui::Checkbox("Spine", &target_spine);
+        ImGui::Checkbox("Hip", &target_hip);
+    } else {
+        ImGui::Text("Primary Target Bone:");
+        static const char* bone_names[] = { "Head", "Neck", "Chest", "Spine", "Hip" };
+        int current_bone = static_cast<int>(target_bone);
+        if (ImGui::Combo("Target Bone", &current_bone, bone_names, IM_ARRAYSIZE(bone_names))) {
+            target_bone = static_cast<AimbotBone>(current_bone);
+        }
+    }
+    
+    ImGui::Separator();
+    
+    // Filtering Section
+    ImGui::Text("Filtering:");
+    ImGui::Checkbox("Visible Only", &visible_only);
+    ImGui::Checkbox("Team Check", &team_check);
+    ImGui::SliderFloat("FOV", &fov, 10.0f, 180.0f, "%.1f°");
+    ImGui::SliderFloat("Max Distance", &max_distance, 50.0f, 1000.0f, "%.0fm");
+    
+    ImGui::Separator();
+    
+    // Smoothing Section
+    ImGui::Text("Smoothing:");
+    ImGui::SliderFloat("Smooth", &smooth, 1.0f, 10.0f, "%.1f");
+    ImGui::Checkbox("Recoil Control System", &rcs_enabled);
+    
+    ImGui::Separator();
+    
+    // Visual Feedback Section
+    ImGui::Text("Visual Feedback:");
+    ImGui::Checkbox("Show FOV Circle", &show_fov_circle);
+    if (show_fov_circle) {
+        ImGui::ColorEdit4("FOV Circle Color", (float*)&fov_circle_color);
+    }
+    ImGui::Checkbox("Show Aim Line", &show_aim_line);
 }
 
 void AimbotSettings::to_json(nlohmann::json& j) const {

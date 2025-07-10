@@ -51,17 +51,14 @@ private:
     TriggerbotSettings m_settings;
     InputManager* m_input_manager;
     
-    // Entity tracking for burst control
     std::unordered_map<uintptr_t, EntityTrackingData> m_entity_tracking;
     
-    // Reaction time system
     std::chrono::high_resolution_clock::time_point m_reaction_start_time;
     std::chrono::high_resolution_clock::time_point m_last_crosshair_change;
     uintptr_t m_last_crosshair_entity = 0;
     bool m_reaction_timer_active = false;
     int m_current_reaction_delay = 0;
     
-    // Random number generation
     std::random_device m_random_device;
     std::mt19937 m_random_generator;
 }; 

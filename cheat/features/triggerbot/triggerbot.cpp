@@ -68,7 +68,6 @@ void TriggerbotFeature::update() {
 
     uintptr_t crosshair_ent = m_entity_cache->get_crosshair_entity();
     
-    // Check if crosshair entity changed
     if (crosshair_ent != m_last_crosshair_entity) {
         m_last_crosshair_entity = crosshair_ent;
         m_last_crosshair_change = std::chrono::high_resolution_clock::now();
@@ -83,14 +82,12 @@ void TriggerbotFeature::update() {
         return;
     }
 
-    // Check if we should use trigger key
     if (m_settings.trigger_key_enabled && m_input_manager) {
         if (!m_input_manager->is_key_pressed(m_settings.trigger_key)) {
             return;
         }
     }
 
-    // Check reaction time
     if (!IsReactionTimeReady()) {
         return;
     }
@@ -102,8 +99,9 @@ void TriggerbotFeature::update() {
         if (player.instance == local_player->instance)
             continue;
 
-        if (player.team == local_player->team)
+        if (m_settings.team_check && player.team == local_player->team) {
             continue;
+        }
 
         if (player.base_entity == crosshair_ent) {
             if (CanShootAtEntity(crosshair_ent)) {
@@ -135,27 +133,21 @@ void TriggerbotFeature::Shoot()
 bool TriggerbotFeature::CanShootAtEntity(uintptr_t entity_id) {
     auto now = std::chrono::high_resolution_clock::now();
     
-    // Find or create tracking data for this entity
     auto& tracking = m_entity_tracking[entity_id];
     
-    // Check if entity is in cooldown
     if (tracking.in_cooldown) {
         auto cooldown_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
             now - tracking.cooldown_start_time).count();
         
         if (cooldown_duration >= m_settings.burst_cooldown_ms) {
-            // Cooldown expired, reset tracking
             tracking.in_cooldown = false;
             tracking.shots_fired = 0;
         } else {
-            // Still in cooldown
             return false;
         }
     }
     
-    // Check if we've reached burst limit
     if (tracking.shots_fired >= m_settings.burst_shots) {
-        // Start cooldown
         tracking.in_cooldown = true;
         tracking.cooldown_start_time = now;
         return false;
@@ -183,7 +175,6 @@ void TriggerbotFeature::UpdateEntityTracking(uintptr_t entity_id) {
     tracking.shots_fired++;
     tracking.last_shot_time = now;
     
-    // Reset reaction timer after shooting
     m_reaction_timer_active = true;
     m_current_reaction_delay = GetRandomReactionTime();
     m_reaction_start_time = now;

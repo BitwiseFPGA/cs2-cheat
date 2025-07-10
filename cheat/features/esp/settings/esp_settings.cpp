@@ -22,15 +22,15 @@ void EspSettings::render_imgui() {
             if (player.enabled) {
                 ImGui::Separator();
                 
-                // Player filters
+                // Filters Section
                 ImGui::Text("Filters:");
-                ImGui::Checkbox("Enemy Only", &player.enemy_only);
+                ImGui::Checkbox("Team Check", &player.team_check);
                 ImGui::Checkbox("Visibility Check", &player.visibility_check);
                 ImGui::SliderFloat("Max Distance", &player.max_distance, 10.0f, 1000.0f, "%.0fm");
                 
                 ImGui::Separator();
                 
-                // Box settings
+                // Box Settings Section
                 ImGui::Text("Box Type:");
                 const char* box_type_items[] = { "None", "2D", "2D Corner", "2D Filled" };
                 int current_box_type = static_cast<int>(player.box_type);
@@ -47,7 +47,7 @@ void EspSettings::render_imgui() {
                 
                 ImGui::Separator();
                 
-                // Player info flags
+                // Player Info Section
                 ImGui::Text("Player Info:");
                 ImGui::CheckboxFlags("Name", &player.player_info, PLAYER_INFO_NAME);
                 ImGui::CheckboxFlags("Distance", &player.player_info, PLAYER_INFO_DISTANCE);
@@ -61,10 +61,10 @@ void EspSettings::render_imgui() {
                 
                 ImGui::Separator();
                 
-                // Player colors
+                // Colors Section
                 ImGui::Text("Colors:");
                 
-                // Box colors section
+                // Box Colors Section
                 ImGui::Text("Box Colors:");
                 ImGui::ColorEdit4("Box Outline", (float*)&player.box_color);
                 if (player.box_type == BOX_TYPE::BOX_2D_FILLED) {
@@ -76,14 +76,14 @@ void EspSettings::render_imgui() {
                 
                 ImGui::Separator();
                 
-                // Visibility colors section
+                // Visibility Colors Section
                 ImGui::Text("Visibility Colors (for skeleton, etc.):");
                 ImGui::ColorEdit4("Visible Color", (float*)&player.color_visible);
                 ImGui::ColorEdit4("Invisible Color", (float*)&player.color_invisible);
                 
                 ImGui::Separator();
                 
-                // Text colors
+                // Text Colors Section
                 ImGui::Text("Text Colors:");
                 ImGui::ColorEdit4("Name Color", (float*)&player.name_color);
             }
@@ -98,7 +98,7 @@ void EspSettings::render_imgui() {
             if (entities.enabled) {
                 ImGui::Separator();
                 
-                // Entity type filters
+                // Entity Types Section
                 ImGui::Text("Entity Types:");
                 ImGui::CheckboxFlags("Weapons", &entities.entity_types, ENTITY_TYPE_WEAPONS);
                 ImGui::CheckboxFlags("Grenades", &entities.entity_types, ENTITY_TYPE_GRENADES);
@@ -109,7 +109,7 @@ void EspSettings::render_imgui() {
                 
                 ImGui::Separator();
                 
-                // Entity info flags
+                // Entity Info Section
                 ImGui::Text("Entity Info:");
                 ImGui::CheckboxFlags("Name", &entities.entity_info, ENTITY_INFO_NAME);
                 ImGui::CheckboxFlags("Distance", &entities.entity_info, ENTITY_INFO_DISTANCE);
@@ -117,7 +117,7 @@ void EspSettings::render_imgui() {
                 
                 ImGui::Separator();
                 
-                // Entity settings
+                // Entity Settings Section
                 ImGui::SliderFloat("Max Distance", &entities.max_distance, 10.0f, 500.0f, "%.0fm");
                 
                 ImGui::Text("Box Type:");
@@ -136,7 +136,7 @@ void EspSettings::render_imgui() {
                 
                 ImGui::Separator();
                 
-                // Entity colors
+                // Colors Section
                 ImGui::Text("Colors:");
                 ImGui::ColorEdit4("Weapon Color", (float*)&entities.weapon_color);
                 ImGui::ColorEdit4("Grenade Color", (float*)&entities.grenade_color);
@@ -160,19 +160,22 @@ void EspSettings::render_imgui() {
             if (map.enabled) {
                 ImGui::Separator();
                 
-                // Map visualization options
+                // Map Visualization Section
+                ImGui::Text("Map Visualization:");
                 ImGui::Checkbox("Show Triangles", &map.show_triangles);
                 
                 if (map.show_triangles) {
                     ImGui::Separator();
                     
+                    // Rendering Settings Section
+                    ImGui::Text("Rendering Settings:");
                     ImGui::Checkbox("Wireframe Only", &map.wireframe_only);
                     ImGui::SliderFloat("Triangle Alpha", &map.triangle_alpha, 0.0f, 1.0f, "%.2f");
                     ImGui::SliderFloat("Max Distance", &map.max_distance, 5.0f, 10000.0f, "%.0fm");
                     
                     ImGui::Separator();
                     
-                    // Map colors
+                    // Colors Section
                     ImGui::Text("Colors:");
                     ImGui::ColorEdit4("Triangle Color", (float*)&map.triangle_color);
                     ImGui::ColorEdit4("Wireframe Color", (float*)&map.wireframe_color);
@@ -189,7 +192,7 @@ void EspSettings::render_imgui() {
             if (smoke.enabled) {
                 ImGui::Separator();
                 
-                // 3D Cube rendering settings
+                // 3D Cube Settings Section
                 ImGui::Text("3D Cube Settings:");
                 ImGui::SliderFloat("Cube Size", &smoke.cube_size, 5.0f, 50.0f, "%.1f");
                 ImGui::SliderFloat("Max Distance", &smoke.max_distance, 50.0f, 500.0f, "%.0fm");
@@ -199,7 +202,7 @@ void EspSettings::render_imgui() {
                 
                 ImGui::Separator();
                 
-                // Color settings
+                // Color Settings Section
                 ImGui::Text("Color Settings:");
                 ImGui::Checkbox("Use Gradient Colors", &smoke.use_gradient_colors);
                 ImGui::ColorEdit4("Low Density Color", (float*)&smoke.low_density_color);
@@ -209,7 +212,7 @@ void EspSettings::render_imgui() {
                 
                 ImGui::Separator();
                 
-                // Edge settings
+                // Edge Settings Section
                 ImGui::Text("Edge Settings:");
                 ImGui::Checkbox("Show Edges", &smoke.show_edges);
                 if (smoke.show_edges) {
@@ -219,14 +222,14 @@ void EspSettings::render_imgui() {
                 
                 ImGui::Separator();
                 
-                // Rendering options
+                // Rendering Options Section
                 ImGui::Text("Rendering Options:");
                 ImGui::Checkbox("Distance Sorting", &smoke.distance_sorting);
                 ImGui::Checkbox("Cull by Distance", &smoke.cull_by_distance);
                 
                 ImGui::Separator();
                 
-                // Performance note
+                // Performance Note Section
                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Note: 3D smoke rendering may impact performance");
                 ImGui::Text("Reduce max distance or increase min density for better FPS");
             }
@@ -243,7 +246,7 @@ void EspSettings::to_json(nlohmann::json& j) const {
     
     // Player settings
     j["player"]["enabled"] = player.enabled;
-    j["player"]["enemy_only"] = player.enemy_only;
+    j["player"]["team_check"] = player.team_check;
     j["player"]["box_type"] = static_cast<int>(player.box_type);
     j["player"]["player_info"] = player.player_info;
     j["player"]["visibility_check"] = player.visibility_check;
@@ -307,7 +310,7 @@ void EspSettings::from_json(const nlohmann::json& j) {
     if (j.contains("player")) {
         const auto& p = j["player"];
         if (p.contains("enabled")) player.enabled = p["enabled"];
-        if (p.contains("enemy_only")) player.enemy_only = p["enemy_only"];
+        if (p.contains("team_check")) player.team_check = p["team_check"];
         if (p.contains("box_type")) player.box_type = static_cast<BOX_TYPE>(p["box_type"]);
         if (p.contains("player_info")) player.player_info = p["player_info"];
         if (p.contains("visibility_check")) player.visibility_check = p["visibility_check"];

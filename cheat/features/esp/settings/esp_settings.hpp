@@ -51,7 +51,7 @@ public:
     // Player ESP Settings
     struct PlayerSettings {
         bool enabled = true;
-        bool enemy_only = true;
+        bool team_check = true;
         BOX_TYPE box_type = BOX_TYPE::BOX_2D;
         int player_info = PLAYER_INFO_NAME | PLAYER_INFO_WEAPON | PLAYER_INFO_HEALTHBAR | PLAYER_INFO_SKELETON;
         bool visibility_check = true;

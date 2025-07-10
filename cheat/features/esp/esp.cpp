@@ -94,7 +94,7 @@ void EspFeature::RenderPlayers() {
         if (player.instance == local_player->instance)
 			continue;
 
-        if (m_settings.player.enemy_only && player.team == local_player->team)
+        if (m_settings.player.team_check && player.team == local_player->team)
             continue;
 
 		Vector3 local_eye_pos = local_player->GetBone(BONE_DEF::HEAD).position;
