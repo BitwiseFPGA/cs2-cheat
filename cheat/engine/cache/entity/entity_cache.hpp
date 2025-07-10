@@ -42,6 +42,7 @@ public:
     uintptr_t get_local_player_ptr() const { return m_local_player_ptr; }
     uintptr_t get_entity_list_ptr() const { return m_entity_list_ptr; }
     uintptr_t get_global_vars_ptr() const { return m_global_vars_ptr; }
+    uintptr_t get_crosshair_entity() const { return m_crosshair_entity; }
             
 private:
     void fetch_globals();
@@ -63,6 +64,10 @@ private:
     uintptr_t m_local_player_ptr = 0;
     uintptr_t m_entity_list_ptr = 0;
     uintptr_t m_global_vars_ptr = 0;
+
+    int32_t m_crosshair = 0;
+    uintptr_t m_crosshair_entry = 0;
+    uintptr_t m_crosshair_entity = 0;
     
     std::vector<uintptr_t> m_list_entries;
     std::vector<GameEntity> m_entities;

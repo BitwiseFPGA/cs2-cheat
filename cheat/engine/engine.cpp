@@ -393,6 +393,8 @@ void Engine::update_view() {
         return;
     }
 
+    // TODO: Move this to a cache
+
     m_view_matrix = m_access_manager->read<Matrix4x4>(
         m_entity_cache->get_client_dll_base() + cs2_dumper::offsets::client_dll::dwViewMatrix
     );

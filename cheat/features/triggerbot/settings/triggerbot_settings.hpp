@@ -17,31 +17,12 @@ public:
     bool trigger_key_enabled = false;
     InputKey trigger_key = InputKey::Alt;
     
-    // Trigger settings
-    float trigger_delay_min = 50.0f;  // Minimum delay in ms
-    float trigger_delay_max = 100.0f; // Maximum delay in ms
-    float crosshair_tolerance = 5.0f; // Pixels around crosshair center
-    bool auto_scope_only = false;     // Only trigger when scoped
+    // Burst settings
+    int burst_shots = 3;
+    int burst_cooldown_ms = 1000;
     
-    // Filtering
-    bool visible_only = true;
-    bool team_check = true;
-    bool head_only = false;           // Only trigger on head shots
-    float max_distance = 300.0f;
+    // Reaction time settings
+    int reaction_time_min_ms = 50;
+    int reaction_time_max_ms = 150;
     
-    // Weapon filtering
-    bool rifle_enabled = true;
-    bool pistol_enabled = true;
-    bool sniper_enabled = true;
-    bool smg_enabled = true;
-    
-    // Safety
-    bool flash_check = true;          // Don't trigger when flashed
-    bool smoke_check = true;          // Don't trigger through smoke
-    
-    // Visual feedback
-    bool show_crosshair_circle = true;
-    ImColor crosshair_color = ImColor(1.0f, 0.0f, 0.0f, 0.8f);
-    bool show_trigger_indicator = true;
-    bool show_target_info = true;
 }; 

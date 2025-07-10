@@ -5,6 +5,7 @@
 #include <features/base_feature.hpp>
 #include <features/esp/esp.hpp>
 #include <features/aimbot/aimbot.hpp>
+#include <features/triggerbot/triggerbot.hpp>
 #include <config/build/settings.hpp>
 
 #include <imgui.h>
@@ -58,6 +59,9 @@ void MainMenu::render_feature_settings() {
                 }
                 else if (auto aimbot_feature = std::dynamic_pointer_cast<AimbotFeature>(feature)) {
                     aimbot_feature->get_settings().render_imgui();
+                }
+                else if (auto triggerbot_feature = std::dynamic_pointer_cast<TriggerbotFeature>(feature)) {
+                    triggerbot_feature->get_settings().render_imgui();
                 }
                 else {
                     ImGui::Text("Feature: %s", feature->get_name().c_str());

@@ -547,6 +547,18 @@ void EntityCache::update_frame() {
         return;
     }
 
+    m_crosshair = m_access_manager->read<int32_t>(
+        m_local_player_ptr + cs2_dumper::schemas::client_dll::C_CSPlayerPawnBase::m_iIDEntIndex
+	);
+
+    m_crosshair_entry = m_access_manager->read<uintptr_t>(
+        m_entity_list_ptr + 8 * (m_crosshair >> 9) + 0x10
+	);
+
+    m_crosshair_entity = m_access_manager->read<uintptr_t>(
+        m_crosshair_entry + 120 * (m_crosshair & 0x1FF)
+	);
+
     m_c4 = nullptr;
     m_local_player = nullptr;
 
