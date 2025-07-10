@@ -1,6 +1,7 @@
 #include <engine/sdk/offsets/static/client_dll.hpp>
 #include <engine/cache/entity/entity_cache.hpp>
 #include <engine/sdk/offsets/static/offsets.hpp>
+#include <engine/sdk/math/voxel.hpp>
 #include <access/access.hpp>
 #include <logger/logger.hpp>
 
@@ -457,6 +458,10 @@ void EntityCache::fetch_other_entity_data(const std::vector<GameEntity>& entitie
     }
 
     if (smoke_entities_to_update.empty()) {
+        // Clear smoke scene if no smokes
+        if (m_engine && m_engine->get_traceline_manager()) {
+            m_engine->get_traceline_manager()->clear_smoke_scene();
+        }
         return;
     }
 
@@ -540,6 +545,27 @@ void EntityCache::fetch_other_entity_data(const std::vector<GameEntity>& entitie
     }
 
     m_smokes = std::move(smoke_entities_to_update);
+
+    // Rebuild smoke scene in TracelineManager with all voxels from all smokes
+    if (m_engine && m_engine->get_traceline_manager()) {
+        std::vector<VoxelData> all_voxels;
+        
+        for (const auto& smoke : m_smokes) {
+            for (const auto& voxel : smoke.voxels) {
+                if (voxel.has_smoke && voxel.density > 0.01f) { // Only include meaningful density voxels
+                    all_voxels.push_back(voxel);
+                }
+            }
+        }
+        
+        if (!all_voxels.empty()) {
+            logger::debug("Rebuilding smoke scene with " + std::to_string(all_voxels.size()) + " voxels from " + std::to_string(m_smokes.size()) + " smokes");
+            m_engine->get_traceline_manager()->rebuild_smoke_scene(all_voxels);
+        } else {
+            // Clear smoke scene if no valid voxels
+            m_engine->get_traceline_manager()->clear_smoke_scene();
+        }
+    }
 }
 
 void EntityCache::update_frame() {

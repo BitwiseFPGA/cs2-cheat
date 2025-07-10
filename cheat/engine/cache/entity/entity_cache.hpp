@@ -6,6 +6,7 @@
 #include <engine/sdk/types/smoke.hpp>
 #include <engine/sdk/math/matrix.hpp>
 #include <access/adapter/base_access.hpp>
+#include <engine/physics/traceline.hpp>
 
 #include <vector>
 #include <memory>
@@ -15,6 +16,7 @@
 class Engine;
 class AccessManager;
 class AutoScatterSystem;
+class TracelineManager;
 
 constexpr int MAX_ENTITIES = 1024;
 constexpr int MAX_PLAYERS = 64;

@@ -298,7 +298,7 @@ void WorldCache::load_world_triangles() {
         logger::info("Successfully loaded " + std::to_string(m_triangles.size()) +
             " triangles from " + std::to_string(leaf_count) + " leaf nodes");
 
-        m_traceline_manager->rebuild(m_triangles);
+        m_traceline_manager->rebuild_world_scene(m_triangles);
 
     }
     catch (const std::exception& e) {

@@ -101,7 +101,7 @@ public:
     
     // Smoke ESP Settings
     struct SmokeSettings {
-        bool enabled = true;
+        bool enabled = false;
         
         // 3D Cube rendering settings
         float cube_size = 20.0f; // Size of each voxel cube
