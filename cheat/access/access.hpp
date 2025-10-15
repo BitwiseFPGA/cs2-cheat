@@ -28,17 +28,8 @@ public:
         return m_adapter ? m_adapter->read<T>(address) : T{};
     }
     
-    template<typename T>
-    bool write(uint64_t address, const T& value) {
-        return m_adapter ? m_adapter->write(address, value) : false;
-    }
-    
     bool read_memory(uint64_t address, void* buffer, size_t size) {
         return m_adapter ? m_adapter->read_memory(address, buffer, size) : false;
-    }
-    
-    bool write_memory(uint64_t address, const void* buffer, size_t size) {
-        return m_adapter ? m_adapter->write_memory(address, buffer, size) : false;
     }
     
     uint64_t get_module_base(const std::string& module_name) {
@@ -67,16 +58,8 @@ public:
         return m_adapter ? m_adapter->add_scatter_read(handle, address, buffer, size) : false;
     }
     
-    bool add_scatter_write(ScatterHandle handle, uint64_t address, const void* buffer, size_t size) {
-        return m_adapter ? m_adapter->add_scatter_write(handle, address, buffer, size) : false;
-    }
-    
     bool scatter_read(ScatterHandle handle) {
         return m_adapter ? m_adapter->scatter_read(handle) : false;
-    }
-    
-    bool scatter_write(ScatterHandle handle) {
-        return m_adapter ? m_adapter->scatter_write(handle) : false;
     }
 
     uintptr_t find_pattern(uintptr_t module_base, const std::string& pattern, const size_t max_size = 0xFFFFFFFF);
