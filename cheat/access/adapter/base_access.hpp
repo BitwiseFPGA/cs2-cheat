@@ -52,7 +52,6 @@ public:
     virtual bool add_scatter_read(ScatterHandle handle, uint64_t address, void* buffer, size_t size) = 0;
     virtual bool scatter_read(ScatterHandle handle) = 0;
 
-    virtual bool is_valid_address(uint64_t address) = 0;
     virtual bool is_attached() const = 0;
     virtual uint32_t get_process_id() const = 0;
     virtual HANDLE get_process_handle() const = 0;
