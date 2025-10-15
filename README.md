@@ -1,5 +1,5 @@
-- remove all memory write
-- change cheat/config/build/settings.hpp dma and input to 1 --> will be using makcu
+
 - add dma.hpp parallel to winapi
-- uodate offsets
+- add makcu support
+- update offsets
 - test
