@@ -64,6 +64,6 @@ public:
 protected:
     bool m_attached;
     uint32_t m_process_id;
-    HANDLE m_process_handle;
+    VMM_HANDLE m_process_handle;
     std::string m_process_name;
 };
