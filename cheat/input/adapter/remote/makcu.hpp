@@ -1,10 +1,10 @@
 #pragma once
 #include <input/adapter/base_input.h>
 
-class KmBoxInput : public BaseInputAdapter {
+class MAKCUInput : public BaseInputAdapter {
 public:
-    KmBoxInput();
-    ~KmBoxInput() override;
+    MAKCUInput();
+    ~MAKCUInput() override;
 
     // BaseInputAdapter implementation
     bool initialize() override;
