@@ -38,7 +38,6 @@ public:
     bool add_scatter_read(ScatterHandle handle, uint64_t address, void* buffer, size_t size) override;
     bool scatter_read(ScatterHandle handle) override;
     
-    bool is_valid_address(uint64_t address) override;
     bool is_attached() const override;
     uint32_t get_process_id() const override;
     HANDLE get_process_handle() const override;
@@ -77,5 +76,6 @@ private:
     uint32_t m_next_scatter_handle_id;
     bool m_modules_cached;
 };
+
 
 
