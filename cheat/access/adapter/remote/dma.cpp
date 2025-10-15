@@ -45,29 +45,29 @@ std::wstring sanitize_module_name(const std::wstring& name) {
     return sanitized;
 }
 
-WinApiAccess::WinApiAccess() 
+DmaMemoryAccess::DmaMemoryAccess() 
     : m_next_scatter_handle_id(1)
     , m_modules_cached(false)
 {
 }
 
-WinApiAccess::~WinApiAccess() {
+DmaMemoryAccess::~DmaMemoryAccess() {
     shutdown();
 }
 
-bool WinApiAccess::initialize() {
+bool DmaMemoryAccess::initialize() {
     logger::info("Initializing local memory access");
     return true;
 }
 
-void WinApiAccess::shutdown() {
+void DmaMemoryAccess::shutdown() {
     detach_from_process();
     
     std::lock_guard<std::mutex> lock(m_scatter_mutex);
     m_scatter_handles.clear();
 }
 
-bool WinApiAccess::attach_to_process(const std::string& process_name) {
+bool DmaMemoryAccess::attach_to_process(const std::string& process_name) {
     uint32_t pid = find_process_id(process_name);
     if (pid == 0) {
         logger::error("Process not found: " + process_name);
@@ -76,7 +76,7 @@ bool WinApiAccess::attach_to_process(const std::string& process_name) {
     return attach_to_process(pid);
 }
 
-bool WinApiAccess::attach_to_process(const std::wstring& process_name) {
+bool DmaMemoryAccess::attach_to_process(const std::wstring& process_name) {
     uint32_t pid = find_process_id(process_name);
     if (pid == 0) {
         logger::error("Process not found: " + wstring_to_string(process_name));
@@ -85,7 +85,7 @@ bool WinApiAccess::attach_to_process(const std::wstring& process_name) {
     return attach_to_process(pid);
 }
 
-bool WinApiAccess::attach_to_process(uint32_t process_id) {
+bool DmaMemoryAccess::attach_to_process(uint32_t process_id) {
     if (m_attached) {
         detach_from_process();
     }
@@ -108,7 +108,7 @@ bool WinApiAccess::attach_to_process(uint32_t process_id) {
     return true;
 }
 
-void WinApiAccess::detach_from_process() {
+void DmaMemoryAccess::detach_from_process() {
     if (m_process_handle) {
         CloseHandle(m_process_handle);
         m_process_handle = nullptr;
@@ -123,7 +123,7 @@ void WinApiAccess::detach_from_process() {
     m_wmodules.clear();
 }
 
-uint64_t WinApiAccess::get_module_base(const std::string& module_name) {
+uint64_t DmaMemoryAccess::get_module_base(const std::string& module_name) {
     if (!refresh_module_list()) {
         return 0;
     }
@@ -132,7 +132,7 @@ uint64_t WinApiAccess::get_module_base(const std::string& module_name) {
     return info.base_address;
 }
 
-uint64_t WinApiAccess::get_module_base(const std::wstring& module_name) {
+uint64_t DmaMemoryAccess::get_module_base(const std::wstring& module_name) {
     if (!refresh_module_list()) {
         return 0;
     }
@@ -141,7 +141,7 @@ uint64_t WinApiAccess::get_module_base(const std::wstring& module_name) {
     return info.base_address;
 }
 
-size_t WinApiAccess::get_module_size(const std::string& module_name) {
+size_t DmaMemoryAccess::get_module_size(const std::string& module_name) {
     if (!refresh_module_list()) {
         return 0;
     }
@@ -150,7 +150,7 @@ size_t WinApiAccess::get_module_size(const std::string& module_name) {
     return info.size;
 }
 
-size_t WinApiAccess::get_module_size(const std::wstring& module_name) {
+size_t DmaMemoryAccess::get_module_size(const std::wstring& module_name) {
     if (!refresh_module_list()) {
         return 0;
     }
@@ -159,7 +159,7 @@ size_t WinApiAccess::get_module_size(const std::wstring& module_name) {
     return info.size;
 }
 
-bool WinApiAccess::read_memory(uint64_t address, void* buffer, size_t size) {
+bool DmaMemoryAccess::read_memory(uint64_t address, void* buffer, size_t size) {
     if (!m_attached) {
         logger::debug("WinAPI: Cannot read memory - not attached to process");
         return false;
@@ -175,7 +175,7 @@ bool WinApiAccess::read_memory(uint64_t address, void* buffer, size_t size) {
     return true;
 }
 
-bool WinApiAccess::read_string(uint64_t address, std::string& str, size_t max_length) {
+bool DmaMemoryAccess::read_string(uint64_t address, std::string& str, size_t max_length) {
     if (!m_attached) {
         return false;
     }
@@ -189,7 +189,7 @@ bool WinApiAccess::read_string(uint64_t address, std::string& str, size_t max_le
     return true;
 }
 
-bool WinApiAccess::read_wstring(uint64_t address, std::wstring& str, size_t max_length) {
+bool DmaMemoryAccess::read_wstring(uint64_t address, std::wstring& str, size_t max_length) {
     if (!m_attached) {
         return false;
     }
@@ -203,7 +203,7 @@ bool WinApiAccess::read_wstring(uint64_t address, std::wstring& str, size_t max_
     return true;
 }
 
-ScatterHandle WinApiAccess::create_scatter_handle() {
+ScatterHandle DmaMemoryAccess::create_scatter_handle() {
     std::lock_guard<std::mutex> lock(m_scatter_mutex);
     
     uint32_t handle_id = m_next_scatter_handle_id++;
@@ -212,7 +212,7 @@ ScatterHandle WinApiAccess::create_scatter_handle() {
     return reinterpret_cast<ScatterHandle>(static_cast<uintptr_t>(handle_id));
 }
 
-void WinApiAccess::close_scatter_handle(ScatterHandle handle) {
+void DmaMemoryAccess::close_scatter_handle(ScatterHandle handle) {
     std::lock_guard<std::mutex> lock(m_scatter_mutex);
     
     uint32_t handle_id = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(handle));
@@ -222,7 +222,7 @@ void WinApiAccess::close_scatter_handle(ScatterHandle handle) {
     }
 }
 
-bool WinApiAccess::add_scatter_read(ScatterHandle handle, uint64_t address, void* buffer, size_t size) {
+bool DmaMemoryAccess::add_scatter_read(ScatterHandle handle, uint64_t address, void* buffer, size_t size) {
     if (!m_attached || !handle || !buffer || size == 0) {
         return false;
     }
@@ -245,7 +245,7 @@ bool WinApiAccess::add_scatter_read(ScatterHandle handle, uint64_t address, void
     return true;
 }
 
-bool WinApiAccess::scatter_read(ScatterHandle handle) {
+bool DmaMemoryAccess::scatter_read(ScatterHandle handle) {
     if (!m_attached || !handle) {
         return false;
     }
@@ -270,7 +270,7 @@ bool WinApiAccess::scatter_read(ScatterHandle handle) {
     return all_success;
 }
 
-bool WinApiAccess::is_valid_address(uint64_t address) {
+bool DmaMemoryAccess::is_valid_address(uint64_t address) {
     if (!m_attached) {
         return false;
     }
@@ -282,19 +282,19 @@ bool WinApiAccess::is_valid_address(uint64_t address) {
            (mbi.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE));
 }
 
-bool WinApiAccess::is_attached() const {
+bool DmaMemoryAccess::is_attached() const {
     return m_attached;
 }
 
-uint32_t WinApiAccess::get_process_id() const {
+uint32_t DmaMemoryAccess::get_process_id() const {
     return m_process_id;
 }
 
-HANDLE WinApiAccess::get_process_handle() const {
+HANDLE DmaMemoryAccess::get_process_handle() const {
     return m_process_handle;
 }
 
-uint64_t WinApiAccess::get_process_base_address() {
+uint64_t DmaMemoryAccess::get_process_base_address() {
     if (!m_attached) {
         return 0;
     }
@@ -320,7 +320,7 @@ uint64_t WinApiAccess::get_process_base_address() {
     return base_address;
 }
 
-uint32_t WinApiAccess::find_process_id(const std::string& process_name) {
+uint32_t DmaMemoryAccess::find_process_id(const std::string& process_name) {
     return find_process_id(string_to_wstring(process_name));
 }
 
@@ -346,7 +346,7 @@ uint32_t WinApiAccess::find_process_id(const std::wstring& process_name) {
     return 0;
 }
 
-bool WinApiAccess::refresh_module_list() {
+bool DmaMemoryAccess::refresh_module_list() {
     if (!m_attached) {
         return false;
     }
@@ -391,7 +391,7 @@ bool WinApiAccess::refresh_module_list() {
     return true;
 }
 
-WinApiAccess::ModuleInfo WinApiAccess::get_module_info(const std::string& module_name) {
+DmaMemoryAccess::ModuleInfo DmaMemoryAccess::get_module_info(const std::string& module_name) {
     std::lock_guard<std::mutex> lock(m_modules_mutex);
     
     std::string sanitized_name = sanitize_module_name(module_name);
@@ -404,7 +404,7 @@ WinApiAccess::ModuleInfo WinApiAccess::get_module_info(const std::string& module
     return { 0, 0 };
 }
 
-WinApiAccess::ModuleInfo WinApiAccess::get_module_info(const std::wstring& module_name) {
+DmaMemoryAccess::ModuleInfo DmaMemoryAccess::get_module_info(const std::wstring& module_name) {
     std::lock_guard<std::mutex> lock(m_modules_mutex);
     
     std::wstring sanitized_name = sanitize_module_name(module_name);
