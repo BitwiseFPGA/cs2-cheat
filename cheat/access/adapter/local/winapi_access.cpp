@@ -175,16 +175,6 @@ bool WinApiAccess::read_memory(uint64_t address, void* buffer, size_t size) {
     return true;
 }
 
-bool WinApiAccess::write_memory(uint64_t address, const void* buffer, size_t size) {
-    if (!m_attached) {
-        return false;
-    }
-    
-    SIZE_T bytes_written = 0;
-    BOOL result = WriteProcessMemory(m_process_handle, reinterpret_cast<LPVOID>(address), buffer, size, &bytes_written);
-    return result && bytes_written == size;
-}
-
 bool WinApiAccess::read_string(uint64_t address, std::string& str, size_t max_length) {
     if (!m_attached) {
         return false;
@@ -211,22 +201,6 @@ bool WinApiAccess::read_wstring(uint64_t address, std::wstring& str, size_t max_
     
     str = std::wstring(buffer.data());
     return true;
-}
-
-bool WinApiAccess::write_string(uint64_t address, const std::string& str) {
-    if (!m_attached) {
-        return false;
-    }
-    
-    return write_memory(address, str.c_str(), str.length() + 1);
-}
-
-bool WinApiAccess::write_wstring(uint64_t address, const std::wstring& str) {
-    if (!m_attached) {
-        return false;
-    }
-    
-    return write_memory(address, str.c_str(), (str.length() + 1) * sizeof(wchar_t));
 }
 
 ScatterHandle WinApiAccess::create_scatter_handle() {
@@ -265,31 +239,6 @@ bool WinApiAccess::add_scatter_read(ScatterHandle handle, uint64_t address, void
     op.address = address;
     op.buffer = buffer;
     op.size = size;
-    op.is_write = false;
-    op.success = false;
-    
-    it->second.operations.push_back(op);
-    return true;
-}
-
-bool WinApiAccess::add_scatter_write(ScatterHandle handle, uint64_t address, const void* buffer, size_t size) {
-    if (!m_attached || !handle || !buffer || size == 0) {
-        return false;
-    }
-    
-    std::lock_guard<std::mutex> lock(m_scatter_mutex);
-    
-    uint32_t handle_id = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(handle));
-    auto it = m_scatter_handles.find(handle_id);
-    if (it == m_scatter_handles.end() || !it->second.in_use) {
-        return false;
-    }
-    
-    ScatterOperation op;
-    op.address = address;
-    op.buffer = const_cast<void*>(buffer);
-    op.size = size;
-    op.is_write = true;
     op.success = false;
     
     it->second.operations.push_back(op);
@@ -311,38 +260,9 @@ bool WinApiAccess::scatter_read(ScatterHandle handle) {
     
     bool all_success = true;
     for (auto& op : it->second.operations) {
-        if (!op.is_write) {
-            op.success = read_memory(op.address, op.buffer, op.size);
-            if (!op.success) {
-                all_success = false;
-            }
-        }
-    }
-    
-    it->second.operations.clear();
-    return all_success;
-}
-
-bool WinApiAccess::scatter_write(ScatterHandle handle) {
-    if (!m_attached || !handle) {
-        return false;
-    }
-    
-    std::lock_guard<std::mutex> lock(m_scatter_mutex);
-    
-    uint32_t handle_id = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(handle));
-    auto it = m_scatter_handles.find(handle_id);
-    if (it == m_scatter_handles.end() || !it->second.in_use) {
-        return false;
-    }
-    
-    bool all_success = true;
-    for (auto& op : it->second.operations) {
-        if (op.is_write) {
-            op.success = write_memory(op.address, op.buffer, op.size);
-            if (!op.success) {
-                all_success = false;
-            }
+        op.success = read_memory(op.address, op.buffer, op.size);
+        if (!op.success) {
+            all_success = false;
         }
     }
     
