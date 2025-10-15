@@ -1,4 +1,4 @@
-- add dma.hpp parallel to winapi - https://github.com/Metick/DMALibrary - just use compiled .dll and call methods from there, cba try implement properly into it
+- add dma.hpp parallel to winapi - https://github.com/Metick/DMALibrary
 - add dma to check if key pressed in inputmanager
 - add makcu support - https://github.com/K4HVH/makcu-cpp/tree/main --> adjust input adapter for official makcu api
 - test
