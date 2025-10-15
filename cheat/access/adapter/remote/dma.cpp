@@ -330,18 +330,6 @@ bool DmaMemoryAccess::scatter_read(ScatterHandle handle) {
     return all_success;
 }
 
-bool DmaMemoryAccess::is_valid_address(uint64_t address) {
-    if (!m_attached) {
-        return false;
-    }
-    
-    MEMORY_BASIC_INFORMATION mbi;
-    SIZE_T result = VirtualQueryEx(m_process_handle, reinterpret_cast<LPCVOID>(address), &mbi, sizeof(mbi));
-    
-    return result != 0 && mbi.State == MEM_COMMIT && 
-           (mbi.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE));
-}
-
 bool DmaMemoryAccess::is_attached() const {
     return m_attached;
 }
