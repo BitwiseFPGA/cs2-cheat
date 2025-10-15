@@ -10,7 +10,7 @@
 #include <mutex>
 #include <vector>
 
-class WinApiAccess : public BaseMemoryAdapter {
+class DmaMemoryAccess : public BaseMemoryAdapter {
 public:
     WinApiAccess();
     virtual ~WinApiAccess();
@@ -77,3 +77,4 @@ private:
     uint32_t m_next_scatter_handle_id;
     bool m_modules_cached;
 };
+
