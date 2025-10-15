@@ -64,6 +64,7 @@ public:
 protected:
     bool m_attached;
     uint32_t m_process_id;
+    DWORD m_flags = VMMDLL_FLAG_NOCACHE | VMMDLL_FLAG_NOCACHEPUT | VMMDLL_FLAG_NOPAGING | VMMDLL_FLAG_NOPAGING_IO;
     VMM_HANDLE m_process_handle;
     std::string m_process_name;
 };
