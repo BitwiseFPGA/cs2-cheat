@@ -324,26 +324,10 @@ uint32_t DmaMemoryAccess::find_process_id(const std::string& process_name) {
     return find_process_id(string_to_wstring(process_name));
 }
 
-uint32_t WinApiAccess::find_process_id(const std::wstring& process_name) {
-    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (snapshot == INVALID_HANDLE_VALUE) {
-        return 0;
-    }
-    
-    PROCESSENTRY32W entry;
-    entry.dwSize = sizeof(PROCESSENTRY32W);
-    
-    if (Process32FirstW(snapshot, &entry)) {
-        do {
-            if (_wcsicmp(entry.szExeFile, process_name.c_str()) == 0) {
-                CloseHandle(snapshot);
-                return entry.th32ProcessID;
-            }
-        } while (Process32NextW(snapshot, &entry));
-    }
-    
-    CloseHandle(snapshot);
-    return 0;
+uint32_t DmaMemoryAccess::find_process_id(const std::wstring& process_name) {
+    DWORD pid = 0;
+	VMMDLL_PidGetFromName(this->vHandle, (LPSTR)process_name.c_str(), &pid);
+	return pid;
 }
 
 bool DmaMemoryAccess::refresh_module_list() {
