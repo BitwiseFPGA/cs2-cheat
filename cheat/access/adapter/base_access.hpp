@@ -42,25 +42,15 @@ public:
         return value;
     }
 
-    template<typename T>
-    bool write(uint64_t address, const T& value) {
-        return write_memory(address, &value, sizeof(T));
-    }
-
     virtual bool read_memory(uint64_t address, void* buffer, size_t size) = 0;
-    virtual bool write_memory(uint64_t address, const void* buffer, size_t size) = 0;
 
     virtual bool read_string(uint64_t address, std::string& str, size_t max_length = 256) = 0;
     virtual bool read_wstring(uint64_t address, std::wstring& str, size_t max_length = 256) = 0;
-    virtual bool write_string(uint64_t address, const std::string& str) = 0;
-    virtual bool write_wstring(uint64_t address, const std::wstring& str) = 0;
 
     virtual ScatterHandle create_scatter_handle() = 0;
     virtual void close_scatter_handle(ScatterHandle handle) = 0;
     virtual bool add_scatter_read(ScatterHandle handle, uint64_t address, void* buffer, size_t size) = 0;
-    virtual bool add_scatter_write(ScatterHandle handle, uint64_t address, const void* buffer, size_t size) = 0;
     virtual bool scatter_read(ScatterHandle handle) = 0;
-    virtual bool scatter_write(ScatterHandle handle) = 0;
 
     virtual bool is_valid_address(uint64_t address) = 0;
     virtual bool is_attached() const = 0;
