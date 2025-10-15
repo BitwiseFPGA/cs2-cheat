@@ -26,7 +26,7 @@ bool AccessManager::initialize() {
     
     try {
 #if USE_DMA_MEMORY
-        logger::info("Using DMA memory access");
+        logger::info("Using remote memory access");
         m_adapter = std::make_unique<DmaMemoryAccess>();
 #else
         logger::info("Using local memory access");
