@@ -52,7 +52,6 @@ private:
         uint64_t address;
         void* buffer;
         size_t size;
-        bool is_write;
         bool success;
     };
     
