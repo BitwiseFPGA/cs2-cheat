@@ -56,7 +56,7 @@ DmaMemoryAccess::~DmaMemoryAccess() {
 }
 
 bool DmaMemoryAccess::initialize() {
-    logger::info("Initializing local memory access");
+    logger::info("Initializing remote memory access");
     return true;
 }
 
@@ -161,7 +161,7 @@ size_t DmaMemoryAccess::get_module_size(const std::wstring& module_name) {
 
 bool DmaMemoryAccess::read_memory(uint64_t address, void* buffer, size_t size) {
     if (!m_attached) {
-        logger::debug("WinAPI: Cannot read memory - not attached to process");
+        logger::debug("DMA: Cannot read memory - not attached to process");
         return false;
     }
     
