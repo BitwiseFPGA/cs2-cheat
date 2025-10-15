@@ -5,8 +5,8 @@
 #define TARGET_PROCESS_NAME "cs2.exe" // Process to read and write memory from
 #define CONFIG_FILE_NAME "config.json" // Settings file name
 
-#define USE_DMA_MEMORY 0 // Otherwise, use the Windows API to read and write memory
-#define USE_REMOTE_INPUT 0 // Otherwise, use the Windows API for input
+#define USE_DMA_MEMORY 1 // Otherwise, use the Windows API to read and write memory
+#define USE_REMOTE_INPUT 1 // Otherwise, use the Windows API for input
 
 // LOG_LEVEL defines the logging level for the cheat
 // 0 = DEBUG (all messages)
