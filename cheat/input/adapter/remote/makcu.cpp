@@ -1,13 +1,13 @@
 #include <input/adapter/remote/kmbox.hpp>
 #include <logger/logger.hpp>
 
-KmBoxInput::KmBoxInput() : BaseInputAdapter(), m_connected(false) {
+MAKCUInput::MAKCUInput() : BaseInputAdapter(), m_connected(false) {
 }
 
-KmBoxInput::~KmBoxInput() {
+MAKCUInput::~MAKCUInput() {
 }
 
-bool KmBoxInput::initialize() {
+bool MAKCUInput::initialize() {
     if (m_initialized) {
         return true;
     }
@@ -23,7 +23,7 @@ bool KmBoxInput::initialize() {
     return true;
 }
 
-void KmBoxInput::shutdown() {
+void MAKCUInput::shutdown() {
     if (!m_initialized) {
         return;
     }
@@ -33,46 +33,46 @@ void KmBoxInput::shutdown() {
 }
 
 // Key state queries - limited functionality for remote input
-bool KmBoxInput::is_key_down(InputKey key) {
+bool MAKCUInput::is_key_down(InputKey key) {
     // Remote input devices typically can't query key state
     return false;
 }
 
-bool KmBoxInput::is_key_up(InputKey key) {
+bool MAKCUInput::is_key_up(InputKey key) {
     return true; // Assume keys are up since we can't query
 }
 
-bool KmBoxInput::is_key_pressed(InputKey key) {
+bool MAKCUInput::is_key_pressed(InputKey key) {
     return false; // Can't detect presses without state
 }
 
-bool KmBoxInput::is_key_released(InputKey key) {
+bool MAKCUInput::is_key_released(InputKey key) {
     return false; // Can't detect releases without state
 }
 
-MousePosition KmBoxInput::get_cursor_position() {
+MousePosition MAKCUInput::get_cursor_position() {
     // Remote devices typically can't query cursor position
     return { 0, 0 };
 }
 
-bool KmBoxInput::is_mouse_button_down(MouseButton button) {
+bool MAKCUInput::is_mouse_button_down(MouseButton button) {
     return false; // Can't query button state
 }
 
-bool KmBoxInput::is_mouse_button_up(MouseButton button) {
+bool MAKCUInput::is_mouse_button_up(MouseButton button) {
     return true; // Assume buttons are up
 }
 
-bool KmBoxInput::is_mouse_button_pressed(MouseButton button) {
+bool MAKCUInput::is_mouse_button_pressed(MouseButton button) {
     return false; // Can't detect presses
 }
 
-bool KmBoxInput::is_mouse_button_released(MouseButton button) {
+bool MAKCUInput::is_mouse_button_released(MouseButton button) {
     return false; // Can't detect releases
 }
 
 // Mouse actions - these would be implemented with KmBox API
-bool KmBoxInput::set_cursor_position(int x, int y) {
+bool MAKCUInput::set_cursor_position(int x, int y) {
     if (!m_initialized || !m_connected) {
         return false;
     }
@@ -82,7 +82,7 @@ bool KmBoxInput::set_cursor_position(int x, int y) {
     return false;
 }
 
-bool KmBoxInput::move_mouse(int delta_x, int delta_y) {
+bool MAKCUInput::move_mouse(int delta_x, int delta_y) {
     if (!m_initialized || !m_connected) {
         return false;
     }
@@ -92,11 +92,11 @@ bool KmBoxInput::move_mouse(int delta_x, int delta_y) {
     return false;
 }
 
-bool KmBoxInput::click_mouse_button(MouseButton button) {
+bool MAKCUInput::click_mouse_button(MouseButton button) {
     return press_mouse_button(button) && release_mouse_button(button);
 }
 
-bool KmBoxInput::press_mouse_button(MouseButton button) {
+bool MAKCUInput::press_mouse_button(MouseButton button) {
     if (!m_initialized || !m_connected) {
         return false;
     }
@@ -106,7 +106,7 @@ bool KmBoxInput::press_mouse_button(MouseButton button) {
     return false;
 }
 
-bool KmBoxInput::release_mouse_button(MouseButton button) {
+bool MAKCUInput::release_mouse_button(MouseButton button) {
     if (!m_initialized || !m_connected) {
         return false;
     }
@@ -116,7 +116,7 @@ bool KmBoxInput::release_mouse_button(MouseButton button) {
     return false;
 }
 
-bool KmBoxInput::scroll_mouse(int delta) {
+bool MAKCUInput::scroll_mouse(int delta) {
     if (!m_initialized || !m_connected) {
         return false;
     }
@@ -127,7 +127,7 @@ bool KmBoxInput::scroll_mouse(int delta) {
 }
 
 // Keyboard actions
-bool KmBoxInput::press_key(InputKey key) {
+bool MAKCUInput::press_key(InputKey key) {
     if (!m_initialized || !m_connected) {
         return false;
     }
@@ -137,7 +137,7 @@ bool KmBoxInput::press_key(InputKey key) {
     return false;
 }
 
-bool KmBoxInput::release_key(InputKey key) {
+bool MAKCUInput::release_key(InputKey key) {
     if (!m_initialized || !m_connected) {
         return false;
     }
@@ -147,11 +147,11 @@ bool KmBoxInput::release_key(InputKey key) {
     return false;
 }
 
-bool KmBoxInput::tap_key(InputKey key) {
+bool MAKCUInput::tap_key(InputKey key) {
     return press_key(key) && release_key(key);
 }
 
-bool KmBoxInput::type_text(const std::string& text) {
+bool MAKCUInput::type_text(const std::string& text) {
     if (!m_initialized || !m_connected) {
         return false;
     }
@@ -161,15 +161,15 @@ bool KmBoxInput::type_text(const std::string& text) {
     return false;
 }
 
-void KmBoxInput::update() {
+void MAKCUInput::update() {
     // Remote input doesn't need state updates
 }
 
-bool KmBoxInput::is_initialized() const {
+bool MAKCUInput::is_initialized() const {
     return m_initialized;
 }
 
-bool KmBoxInput::connect_to_device() {
+bool MAKCUInput::connect_to_device() {
     if (m_connected) {
         return true;
     }
@@ -179,7 +179,7 @@ bool KmBoxInput::connect_to_device() {
     return false;
 }
 
-void KmBoxInput::disconnect_from_device() {
+void MAKCUInput::disconnect_from_device() {
     if (!m_connected) {
         return;
     }
