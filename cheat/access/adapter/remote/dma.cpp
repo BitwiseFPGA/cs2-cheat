@@ -89,12 +89,70 @@ bool DmaMemoryAccess::attach_to_process(uint32_t process_id) {
     if (m_attached) {
         detach_from_process();
     }
-    
-    m_process_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, process_id);
-    if (!m_process_handle) {
-        logger::error("Failed to open process with ID: " + std::to_string(process_id) + " Error: " + std::to_string(GetLastError()));
-        return false;
-    }
+
+	reinit:
+		LPCSTR args[] = {const_cast<LPCSTR>(""), const_cast<LPCSTR>("-device"), const_cast<LPCSTR>("fpga://algo=0"), const_cast<LPCSTR>(""), const_cast<LPCSTR>(""), const_cast<LPCSTR>(""), const_cast<LPCSTR>("")};
+		DWORD argc = 3;
+		if (debug)
+		{
+			args[argc++] = const_cast<LPCSTR>("-v");
+			args[argc++] = const_cast<LPCSTR>("-printf");
+		}
+
+		std::string path = "";
+		if (memMap)
+		{
+			auto temp_path = std::filesystem::temp_directory_path();
+			path = (temp_path.string() + "\\mmap.txt");
+			bool dumped = false;
+			if (!std::filesystem::exists(path))
+				dumped = this->DumpMemoryMap(debug);
+			else
+				dumped = true;
+			LOG("dumping memory map to file...\n");
+			if (!dumped)
+			{
+				LOG("[!] ERROR: Could not dump memory map!\n");
+				LOG("Defaulting to no memory map!\n");
+			}
+			else
+			{
+				LOG("Dumped memory map!\n");
+
+				//Add the memory map to the arguments and increase arg count.
+				args[argc++] = const_cast<LPSTR>("-memmap");
+				args[argc++] = const_cast<LPSTR>(path.c_str());
+			}
+		}
+		m_process_handle = VMMDLL_Initialize(argc, args);
+		if (!m_process_handle)
+		{
+			if (memMap)
+			{
+				memMap = false;
+				LOG("[!] Initialization failed with Memory map? Try without MMap\n");
+				goto reinit;
+			}
+			LOG("[!] Initialization failed! Is the DMA in use or disconnected?\n");
+			return false;
+		}
+
+		ULONG64 FPGA_ID = 0, DEVICE_ID = 0;
+
+		VMMDLL_ConfigGet(this->vHandle, LC_OPT_FPGA_FPGA_ID, &FPGA_ID);
+		VMMDLL_ConfigGet(this->vHandle, LC_OPT_FPGA_DEVICE_ID, &DEVICE_ID);
+
+		LOG("FPGA ID: %llu\n", FPGA_ID);
+		LOG("DEVICE ID: %llu\n", DEVICE_ID);
+		LOG("success!\n");
+
+		if (!this->SetFPGA())
+		{
+			LOG("[!] Could not set FPGA!\n");
+			VMMDLL_Close(m_process_handle);
+			return false;
+		}
+	}
     
     m_process_id = process_id;
     m_attached = true;
@@ -110,7 +168,7 @@ bool DmaMemoryAccess::attach_to_process(uint32_t process_id) {
 
 void DmaMemoryAccess::detach_from_process() {
     if (m_process_handle) {
-        CloseHandle(m_process_handle);
+		VMMDLL_Close(m_process_handle);
         m_process_handle = nullptr;
     }
     
@@ -166,7 +224,7 @@ bool DmaMemoryAccess::read_memory(uint64_t address, void* buffer, size_t size) {
     }
     
     SIZE_T bytes_read = 0;
-    BOOL result = ReadProcessMemory(m_process_handle, reinterpret_cast<LPCVOID>(address), buffer, size, &bytes_read);
+	BOOL result = VMMDLL_MemReadEx(m_process_handle, m_process_id, address, static_cast<PBYTE>(buffer), size, &bytes_read, m_flags);
     
     if (!result || bytes_read != size) {
         return false;
@@ -177,6 +235,7 @@ bool DmaMemoryAccess::read_memory(uint64_t address, void* buffer, size_t size) {
 
 bool DmaMemoryAccess::read_string(uint64_t address, std::string& str, size_t max_length) {
     if (!m_attached) {
+		logger::debug("DMA: Cannot read memory - not attached to process");
         return false;
     }
     
@@ -191,6 +250,7 @@ bool DmaMemoryAccess::read_string(uint64_t address, std::string& str, size_t max
 
 bool DmaMemoryAccess::read_wstring(uint64_t address, std::wstring& str, size_t max_length) {
     if (!m_attached) {
+		logger::debug("DMA: Cannot read memory - not attached to process");
         return false;
     }
     
@@ -321,13 +381,13 @@ uint64_t DmaMemoryAccess::get_process_base_address() {
 }
 
 uint32_t DmaMemoryAccess::find_process_id(const std::string& process_name) {
-    return find_process_id(string_to_wstring(process_name));
+	DWORD pid = 0;
+	VMMDLL_PidGetFromName(m_process_handle, (LPSTR)process_name.c_str(), &pid);
+	return pid;
 }
 
 uint32_t DmaMemoryAccess::find_process_id(const std::wstring& process_name) {
-    DWORD pid = 0;
-	VMMDLL_PidGetFromName(this->vHandle, (LPSTR)process_name.c_str(), &pid);
-	return pid;
+	return find_process_id(wstring_to_string(process_name));
 }
 
 bool DmaMemoryAccess::refresh_module_list() {
