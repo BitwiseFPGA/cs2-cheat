@@ -27,19 +27,14 @@ public:
     size_t get_module_size(const std::wstring& module_name) override;
     
     bool read_memory(uint64_t address, void* buffer, size_t size) override;
-    bool write_memory(uint64_t address, const void* buffer, size_t size) override;
     
     bool read_string(uint64_t address, std::string& str, size_t max_length = 256) override;
     bool read_wstring(uint64_t address, std::wstring& str, size_t max_length = 256) override;
-    bool write_string(uint64_t address, const std::string& str) override;
-    bool write_wstring(uint64_t address, const std::wstring& str) override;
     
     ScatterHandle create_scatter_handle() override;
     void close_scatter_handle(ScatterHandle handle) override;
     bool add_scatter_read(ScatterHandle handle, uint64_t address, void* buffer, size_t size) override;
-    bool add_scatter_write(ScatterHandle handle, uint64_t address, const void* buffer, size_t size) override;
     bool scatter_read(ScatterHandle handle) override;
-    bool scatter_write(ScatterHandle handle) override;
     
     bool is_valid_address(uint64_t address) override;
     bool is_attached() const override;
